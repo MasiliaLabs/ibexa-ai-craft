@@ -25,5 +25,8 @@
     },
     "config": {
         "sort-packages": true
+    },
+    "suggest": {
+        "masilia/ibexa-blocks": "When installed, its conventions (page type, blocks field…) are the ones the assistant follows"
     }
 }
