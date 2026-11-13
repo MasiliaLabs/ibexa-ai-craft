@@ -8,8 +8,11 @@ use Ibexa\Contracts\Core\Repository\Repository;
 use Masilia\Bundle\IbexaAi\Agent\Tool\ContentFactoryInterface;
 use Masilia\Bundle\IbexaAi\Agent\Tool\ToolInterface;
 use Masilia\Bundle\IbexaAiCraft\Capability\AddBlocksCapability;
+use Masilia\Bundle\IbexaAi\Agent\Tool\SiteaccessLocationResolver;
+use Masilia\Bundle\IbexaAiCraft\Capability\ConventionsCapability;
 use Masilia\Bundle\IbexaAiCraft\Capability\CreateStructureCapability;
 use Masilia\Bundle\IbexaAiCraft\Capability\ExploreCapability;
+use Masilia\Bundle\IbexaAiCraft\Mining\ConventionMiner;
 use Masilia\Bundle\IbexaAiCraft\Site\ItemsCreator;
 use Masilia\Bundle\IbexaAiCraft\Site\SiteExplorer;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
@@ -40,6 +43,7 @@ final class CapabilitiesTest extends TestCase
             new ExploreCapability($explorer),
             new AddBlocksCapability($creator, $repository, $conventions),
             new CreateStructureCapability($test->createMock(ToolInterface::class)),
+            new ConventionsCapability(new ConventionMiner($repository, $conventions), $test->createMock(SiteaccessLocationResolver::class), $repository),
         ] as $capability) {
             yield $capability->name() => [$capability];
         }

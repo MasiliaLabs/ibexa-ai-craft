@@ -73,6 +73,8 @@ final readonly class CraftSelftestScenario implements SelftestScenario
         ]);
         $context->step('the page lists three', 'relations.list', ['content_id' => $pageId], static fn (array $d): ?string => ($d['outgoing_total'] ?? 0) >= 3 ? null : 'a block was lost');
 
+        $context->step('the conventions of the pages are mined', 'site.conventions', ['location_id' => $context->parentLocationId], static fn (array $d): ?string => ($d['pages'] ?? 0) >= 1 && ($d['block_types'] ?? []) !== [] ? null : 'the page was not read', 'conventions');
+
         if ($allowed !== []) {
             $refused = $this->typeNotIn($allowed);
             $context->step('a type the page does not take is refused', 'site.add_blocks', ['content_id' => $pageId, 'items' => [['type' => $refused]]], null, null, true);

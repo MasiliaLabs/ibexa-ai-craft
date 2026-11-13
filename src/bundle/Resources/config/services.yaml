@@ -14,6 +14,13 @@ services:
     Masilia\Bundle\IbexaAiCraft\Catalog\:
         resource: '../../Catalog/'
 
+    Masilia\Bundle\IbexaAiCraft\Mining\:
+        resource: '../../Mining/'
+        exclude: '../../Mining/PagePatterns.php'
+
+    Masilia\Bundle\IbexaAiCraft\Command\:
+        resource: '../../Command/'
+
     Masilia\Bundle\IbexaAiCraft\Site\:
         resource: '../../Site/'
         exclude: '../../Site/ExplorationResult.php'
