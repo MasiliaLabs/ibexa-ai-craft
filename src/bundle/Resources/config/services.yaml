@@ -33,3 +33,8 @@ services:
 
     Masilia\Bundle\IbexaAiCraft\Skill\:
         resource: '../../Skill/'
+
+    # Steps added to `masilia:ai:os:selftest` (found by the interface they implement).
+    Masilia\Bundle\IbexaAiCraft\Selftest\:
+        resource: '../../Selftest/'
+        exclude: '../../Selftest/RequiredFields.php'
