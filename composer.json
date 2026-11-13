@@ -5,7 +5,7 @@
     "license": "proprietary",
     "require": {
         "php": ">=8.3",
-        "masilia/ibexa-ai": "^0.4",
+        "masilia/ibexa-ai": "^0.5",
         "symfony/config": "^7.4",
         "symfony/dependency-injection": "^7.4",
         "symfony/http-kernel": "^7.4"
