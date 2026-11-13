@@ -8,6 +8,7 @@ use Ibexa\Contracts\Core\SiteAccess\ConfigResolverInterface;
 use Ibexa\Core\MVC\Symfony\SiteAccess\SiteAccessServiceInterface;
 use Masilia\Bundle\IbexaAiCraft\Catalog\ContentCatalog;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
+use Masilia\Contracts\IbexaBlocks\ShownBlocks;
 use Masilia\Bundle\IbexaAiCraft\Tool\CraftToolName;
 use Masilia\Bundle\IbexaAi\Agent\Tool\ToolRegistry;
 use Masilia\Bundle\IbexaAi\Agent\Tool\ToolResult;
@@ -35,6 +36,8 @@ final readonly class SiteExplorer
         private LoggerInterface            $aiLogger,
         private ?ContentCatalog            $contentCatalog = null,
         private Conventions                $conventions = new Conventions(),
+        /** With masilia/ibexa-blocks: the block types the design of the site can show; the others are left out of the answer */
+        private ?ShownBlocks               $shownBlocks = null,
     ) {
     }
 
@@ -47,6 +50,7 @@ final readonly class SiteExplorer
             $siteStructure = [];
             $parentCandidates = [];
             $blockTypes = [];
+            $notShownBlockTypes = [];
 
             if ($matched !== null) {
                 $rootLocationId = $this->resolveRoot($matched);
@@ -54,6 +58,18 @@ final readonly class SiteExplorer
                 $parentCandidates = $this->findParents($matched);
                 $blockTypes = $this->listBlocks();
                 $parentBlocksAllowedTypes = $this->resolveParentBlocksAllowedTypes();
+
+                // A block the theme of the site has no template for is not shown there (the page answers 404): do not offer it.
+                $shown = $this->shownBlocks?->forSiteaccess($matched) ?? [];
+                if ($shown !== []) {
+                    $identifier = static fn (mixed $block): string => (string) (is_array($block) ? ($block['identifier'] ?? '') : $block);
+                    $notShownBlockTypes = array_values(array_unique(array_filter(
+                        array_map($identifier, [...$blockTypes, ...$parentBlocksAllowedTypes]),
+                        static fn (string $type): bool => $type !== '' && !in_array($type, $shown, true),
+                    )));
+                    $blockTypes = array_values(array_filter($blockTypes, static fn (mixed $block): bool => in_array($identifier($block), $shown, true)));
+                    $parentBlocksAllowedTypes = array_values(array_filter($parentBlocksAllowedTypes, static fn (string $type): bool => in_array($type, $shown, true)));
+                }
             }
 
             return new ExplorationResult(
@@ -64,6 +80,7 @@ final readonly class SiteExplorer
                 parentCandidates: $parentCandidates,
                 blockTypes: $blockTypes,
                 parentBlocksAllowedTypes: $parentBlocksAllowedTypes ?? [],
+                notShownBlockTypes: $notShownBlockTypes,
             );
         } catch (Throwable $e) {
             $this->aiLogger->error('[SiteExplorer] Exploration failed: {message}', [

@@ -212,4 +212,34 @@ final class SiteExplorerTest extends TestCase
 
         self::assertSame([], $result->parentBlocksAllowedTypes);
     }
+
+    public function testBlocksTheThemeOfTheSiteHasNoTemplateForAreNotOffered(): void
+    {
+        $blocks = new class implements ToolInterface {
+            public function getName(): string { return CraftToolName::LIST_BLOCKS; }
+            public function getDescription(): string { return 'mock'; }
+            public function getParameters(): array { return []; }
+            public function execute(array $params): ToolResult
+            {
+                return ToolResult::ok('ok', ['blocks' => [['identifier' => 'hero_banner'], ['identifier' => 'info_cards'], ['identifier' => 'orphan']]]);
+            }
+        };
+        $registry = (new ToolRegistry())->register($blocks);
+        $catalog = $this->createContentCatalog(['Content' => ['page' => ['name' => 'Page', 'fields' => ['blocks' => [
+            'type' => 'ibexa_object_relation_list',
+            'settings' => ['selectionContentTypes' => ['hero_banner', 'info_cards', 'orphan']],
+        ]]]]]);
+        $shown = new class implements \Masilia\Contracts\IbexaBlocks\ShownBlocks {
+            public ?string $asked = null;
+            public function forSiteaccess(string $siteaccess): array { $this->asked = $siteaccess; return ['hero_banner', 'info_cards']; }
+        };
+
+        $explorer = new SiteExplorer($this->makeService(['fossilexit']), $this->makeConfigResolver(42), $registry, new NullLogger(), $catalog, new \Masilia\Bundle\IbexaAiCraft\Support\Conventions(), $shown);
+        $result = $explorer->explore('fossilexit');
+
+        self::assertSame('fossilexit', $shown->asked);
+        self::assertSame(['hero_banner', 'info_cards'], array_column($result->blockTypes, 'identifier'));
+        self::assertSame(['hero_banner', 'info_cards'], $result->parentBlocksAllowedTypes);
+        self::assertSame(['orphan'], $result->notShownBlockTypes);
+    }
 }

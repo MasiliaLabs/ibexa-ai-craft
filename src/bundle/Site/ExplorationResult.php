@@ -17,6 +17,7 @@ readonly class ExplorationResult
      * @param list<array<string, mixed>> $parentCandidates   Candidate parent locations
      * @param list<array<string, mixed>> $blockTypes         Available block types
      * @param list<string>             $parentBlocksAllowedTypes  Allowed block type identifiers on the parent page's "blocks" field
+     * @param list<string>             $notShownBlockTypes   Block types that exist but that the theme of the site has no template for (left out of blockTypes)
      * @param string|null              $errorMessage         If exploration failed
      */
     public function __construct(
@@ -28,6 +29,7 @@ readonly class ExplorationResult
         public array  $blockTypes,
         public array  $parentBlocksAllowedTypes = [],
         public ?string $errorMessage = null,
+        public array  $notShownBlockTypes = [],
     ) {
     }
 
@@ -54,6 +56,7 @@ readonly class ExplorationResult
             'parentCandidates' => $this->parentCandidates,
             'blockTypes' => $this->blockTypes,
             'parentBlocksAllowedTypes' => $this->parentBlocksAllowedTypes,
+            'notShownBlockTypes' => $this->notShownBlockTypes,
             'errorMessage' => $this->errorMessage,
         ];
     }
