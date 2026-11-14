@@ -7,13 +7,14 @@ namespace Masilia\Bundle\IbexaAiCraft\Catalog;
 use Ibexa\Contracts\Core\Repository\ContentTypeService;
 use Ibexa\Contracts\Core\Repository\Exceptions\NotFoundException;
 use Ibexa\Contracts\Core\Repository\Values\ContentType\ContentType;
-use Masilia\Bundle\IbexaAi\Support\FieldType;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
 use Masilia\Contracts\IbexaAi\Content\ContentTypeSchemas;
 use Psr\Cache\CacheItemPoolInterface;
 
 final class BlockCatalog
 {
+    private const MATRIX = 'ibexa_matrix';
+    private const RELATION_LIST = 'ibexa_object_relation_list';
     private const CACHE_KEY = 'masilia_ai_craft.block_catalog.available_blocks.v1';
     private const CACHE_TTL = 3600; // 1 hour; invalidated by AI cache warmer too
 
@@ -137,12 +138,12 @@ final class BlockCatalog
     private function fieldSuffix(array $fieldInfo): string
     {
         $type = (string) ($fieldInfo['type'] ?? '');
-        if ($type === FieldType::EZMATRIX && !empty($fieldInfo['columns'])) {
+        if ($type === self::MATRIX && !empty($fieldInfo['columns'])) {
             $cols = array_column($fieldInfo['columns'], 'identifier');
 
             return '[' . implode(',', $cols) . ']';
         }
-        if ($type === FieldType::EZOBJECTRELATIONLIST && !empty($fieldInfo['allowedTypes'])) {
+        if ($type === self::RELATION_LIST && !empty($fieldInfo['allowedTypes'])) {
             return '<' . implode('|', $fieldInfo['allowedTypes']) . '>';
         }
 

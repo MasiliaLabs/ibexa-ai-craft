@@ -11,7 +11,8 @@ use Ibexa\Contracts\Core\Repository\Repository;
 use Ibexa\Contracts\Core\Repository\Values\Content\Language;
 use Ibexa\Contracts\Core\Repository\Values\Content\ContentInfo;
 use Ibexa\Core\Repository\Values\ContentType\FieldDefinitionCollection;
-use Masilia\Bundle\IbexaAi\Agent\Tool\ContentFactoryInterface;
+use Masilia\Bundle\IbexaAi\Content\EnabledLanguages;
+use Masilia\Contracts\IbexaAi\Content\ContentWriter;
 use Masilia\Bundle\IbexaAiCraft\Site\ItemsCreator;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
 use Masilia\IbexaAiCraft\Tests\Catalog\BlockCatalogFactoryTrait;
@@ -37,7 +38,7 @@ final class ItemsCreatorTest extends TestCase
         return new FakeContentType($identifier, ucfirst($identifier), new FieldDefinitionCollection($definitions));
     }
 
-    private function creator(?ContentFactoryInterface $factory = null): ItemsCreator
+    private function creator(?ContentWriter $writer = null): ItemsCreator
     {
         $page = $this->type('page', ['blocks' => ['ibexa_object_relation_list', ['selectionContentTypes' => ['hero_banner', 'info_cards']]], 'title' => ['ibexa_string', []]]);
         $types = [
@@ -65,7 +66,7 @@ final class ItemsCreatorTest extends TestCase
         $repository->method('commit')->willReturnCallback(function (): void { ++$this->commits; });
         $repository->method('rollback')->willReturnCallback(function (): void { ++$this->rollbacks; });
 
-        return new ItemsCreator($repository, $factory ?? $this->createMock(ContentFactoryInterface::class), new Conventions());
+        return new ItemsCreator($repository, $writer ?? $this->createMock(ContentWriter::class), new EnabledLanguages($languages), new Conventions());
     }
 
     public function testAValidRequestHasNoProblem(): void

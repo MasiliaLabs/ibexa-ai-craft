@@ -25,18 +25,9 @@ services:
         resource: '../../Site/'
         exclude: '../../Site/ExplorationResult.php'
 
-    # The internal tools are found by name through the ToolRegistry of the OS (they implement its ToolInterface).
-    Masilia\Bundle\IbexaAiCraft\Tool\:
-        resource: '../../Tool/'
-        exclude: '../../Tool/CraftToolName.php'
-
     # Capabilities and the skill are registered by the interfaces they implement.
     Masilia\Bundle\IbexaAiCraft\Capability\:
         resource: '../../Capability/'
-
-    Masilia\Bundle\IbexaAiCraft\Capability\CreateStructureCapability:
-        arguments:
-            $structureTool: '@Masilia\Bundle\IbexaAiCraft\Tool\CreateSiteStructureTool'
 
     Masilia\Bundle\IbexaAiCraft\Skill\:
         resource: '../../Skill/'

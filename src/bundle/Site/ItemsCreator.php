@@ -7,12 +7,9 @@ namespace Masilia\Bundle\IbexaAiCraft\Site;
 use Ibexa\Contracts\Core\Repository\Repository;
 use Ibexa\Contracts\Core\Repository\Values\ContentType\ContentType;
 use Ibexa\Contracts\Core\Repository\Values\ContentType\FieldDefinition;
-use Masilia\Bundle\IbexaAi\Agent\Tool\ContentFactoryInterface;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
-use Masilia\Bundle\IbexaAiCraft\Support\ContentTypeId;
-use Masilia\Bundle\IbexaAiCraft\Support\FieldId;
-use Masilia\IbexaAi\Suggestion\LanguageCode;
-use RuntimeException;
+use Masilia\Contracts\IbexaAi\Content\ContentWriter;
+use Masilia\Contracts\IbexaAi\Content\Languages;
 use Throwable;
 
 /**
@@ -27,10 +24,13 @@ final readonly class ItemsCreator
     public const MAX_ITEMS = 40;
     private const MAX_DEPTH = 3;
     private const RELATION_LIST = 'ibexa_object_relation_list';
+    /** The field of a folder that holds its name. */
+    private const FOLDER_NAME = 'name';
 
     public function __construct(
         private Repository $repository,
-        private ContentFactoryInterface $contentFactory,
+        private ContentWriter $writer,
+        private Languages $languages,
         private Conventions $conventions,
     ) {
     }
@@ -80,14 +80,7 @@ final readonly class ItemsCreator
      */
     private function language(string $language): ?string
     {
-        $codes = [];
-        foreach ($this->repository->getContentLanguageService()->loadLanguages() as $known) {
-            if ($known->enabled) {
-                $codes[] = $known->languageCode;
-            }
-        }
-
-        return LanguageCode::resolve($language, $codes);
+        return $this->languages->resolve($language);
     }
 
     /**
@@ -160,11 +153,7 @@ final readonly class ItemsCreator
         $ids = [];
         foreach ($items as $item) {
             $type = (string) $item['type'];
-            $created = $this->contentFactory->createAndPublish($type, [$folder], (array) ($item['fields'] ?? []), $lang);
-            if (!isset($created['content'])) {
-                throw new RuntimeException(sprintf('The item of type "%s" was not created.', $type));
-            }
-            $itemId = (int) $created['content']->id;
+            $itemId = (int) $this->writer->create($type, [$folder], (array) ($item['fields'] ?? []), $lang)->content->getId();
             $ids[] = $itemId;
             if (isset($item['items'])) {
                 $children[$itemId] = $this->createUnder($itemId, $this->conventions->itemsField, (array) $item['items'], $lang, $children);
@@ -183,14 +172,14 @@ final readonly class ItemsCreator
     {
         $locations = $this->repository->getLocationService();
         foreach ($locations->loadLocationChildren($locations->loadLocation($parentLocationId), 0, 100) as $child) {
-            if ($child->contentInfo->getContentType()->identifier === ContentTypeId::FOLDER && strcasecmp((string) $child->getContent()->getName(), $name) === 0) {
+            if ($child->contentInfo->getContentType()->identifier === $this->conventions->folderType && strcasecmp((string) $child->getContent()->getName(), $name) === 0) {
                 return $child->id;
             }
         }
 
         $contents = $this->repository->getContentService();
-        $struct = $contents->newContentCreateStruct($this->repository->getContentTypeService()->loadContentTypeByIdentifier(ContentTypeId::FOLDER), $language);
-        $struct->setField(FieldId::NAME, $name, $language);
+        $struct = $contents->newContentCreateStruct($this->repository->getContentTypeService()->loadContentTypeByIdentifier($this->conventions->folderType), $language);
+        $struct->setField(self::FOLDER_NAME, $name, $language);
         $draft = $contents->createContent($struct, [$locations->newLocationCreateStruct($parentLocationId)]);
 
         return $contents->publishVersion($draft->getVersionInfo())->contentInfo->getMainLocation()->id;

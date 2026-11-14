@@ -4,238 +4,144 @@ declare(strict_types=1);
 
 namespace Masilia\IbexaAiCraft\Tests\Site;
 
-use Ibexa\Contracts\Core\SiteAccess\ConfigResolverInterface;
 use Ibexa\Core\MVC\Symfony\SiteAccess;
 use Ibexa\Core\MVC\Symfony\SiteAccess\SiteAccessServiceInterface;
 use Masilia\Bundle\IbexaAiCraft\Catalog\ContentCatalog;
-use Masilia\Bundle\IbexaAi\Agent\Tool\ToolInterface;
-use Masilia\Bundle\IbexaAiCraft\Tool\CraftToolName;
-use Masilia\Bundle\IbexaAi\Agent\Tool\ToolRegistry;
-use Masilia\Bundle\IbexaAi\Agent\Tool\ToolResult;
+use Masilia\Bundle\IbexaAiCraft\Site\ParentCandidates;
 use Masilia\Bundle\IbexaAiCraft\Site\SiteExplorer;
+use Masilia\Bundle\IbexaAiCraft\Site\SiteTree;
+use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
+use Masilia\Contracts\IbexaAi\Site\SiteLocations;
+use Masilia\Contracts\IbexaBlocks\ShownBlocks;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
 final class SiteExplorerTest extends TestCase
 {
     use \Masilia\IbexaAiCraft\Tests\Catalog\ContentCatalogFactoryTrait;
-    private function makeService(array $names): SiteAccessServiceInterface
+    use \Masilia\IbexaAiCraft\Tests\Catalog\BlockCatalogFactoryTrait;
+
+    /** @var list<array{string, int}> What the tree and the candidates were asked for */
+    private array $asked = [];
+
+    /**
+     * @param list<string> $siteaccesses
+     */
+    private function explorer(array $siteaccesses, ?ContentCatalog $catalog = null, ?ShownBlocks $shown = null, bool $treeFails = false): SiteExplorer
     {
         $service = $this->createMock(SiteAccessServiceInterface::class);
-        $siteAccesses = [];
-        foreach ($names as $name) {
-            $sa = $this->createMock(SiteAccess::class);
-            $sa->name = $name;
-            $siteAccesses[] = $sa;
-        }
-        $service->method('getAll')->willReturn($siteAccesses);
-        return $service;
+        $service->method('getAll')->willReturn(array_map(static fn (string $name): SiteAccess => new SiteAccess($name), $siteaccesses));
+
+        $locations = $this->createMock(SiteLocations::class);
+        $locations->method('rootLocationId')->willReturnCallback(static fn (string $siteaccess): ?int => $siteaccess === 'no_root' ? null : 42);
+
+        $tree = $this->createMock(SiteTree::class);
+        $tree->method('under')->willReturnCallback(function (int $root, int $depth) use ($treeFails): array {
+            $this->asked[] = ['tree', $root];
+            if ($treeFails) {
+                throw new \RuntimeException('search is down');
+            }
+
+            return ['root_location_id' => $root, 'total_items' => 1, 'children' => [['location_id' => 50, 'content_id' => 60, 'content_type' => 'page', 'name' => 'About']]];
+        });
+        $parents = $this->createMock(ParentCandidates::class);
+        $parents->method('under')->willReturnCallback(function (int $root, string $type): array {
+            $this->asked[] = ['parents:' . $type, $root];
+
+            return [['location_id' => 50, 'name' => 'About', 'content_type' => $type]];
+        });
+
+        $blocks = $this->createBlockCatalog([
+            'hero_banner' => ['name' => 'Hero', 'fields' => ['title' => 'ibexa_string']],
+            'info_cards' => ['name' => 'Cards', 'fields' => ['title' => 'ibexa_string']],
+            'orphan' => ['name' => 'Orphan', 'fields' => ['title' => 'ibexa_string']],
+        ]);
+
+        return new SiteExplorer($service, $locations, $tree, $parents, $blocks, new NullLogger(), $catalog, new Conventions(), $shown);
     }
 
-    private function makeConfigResolver(int $rootId): ConfigResolverInterface
+    private function pageCatalog(): ContentCatalog
     {
-        $cr = $this->createMock(ConfigResolverInterface::class);
-        $cr->method('getParameter')->willReturnCallback(
-            function (string $param, ?string $namespace = null, $scope = null) use ($rootId) {
-                if ($param === 'content.tree_root.location_id') {
-                    return $rootId;
-                }
-                throw new \RuntimeException("Unknown param: $param");
-            },
-        );
-        return $cr;
+        return $this->createContentCatalog(['Content' => ['page' => ['name' => 'Page', 'fields' => ['blocks' => [
+            'type' => 'ibexa_object_relation_list',
+            'settings' => ['selectionContentTypes' => ['hero_banner', 'info_cards', 'orphan']],
+        ]]]]]);
     }
 
-    public function testExploreListsAllSiteaccesses(): void
+    public function testWithoutAMatchOnlyTheSiteaccessesAreListed(): void
     {
-        $service = $this->makeService(['fossilexit', 'mattcch', 'admin']);
-        $cr = $this->makeConfigResolver(42);
-        $registry = new ToolRegistry();
+        $result = $this->explorer(['admin', 'mattcch'])->explore('unknown_site');
 
-        $explorer = new SiteExplorer($service, $cr, $registry, new NullLogger());
-        $result = $explorer->explore('fossilexit');
-
-        self::assertSame(['admin', 'fossilexit', 'mattcch'], $result->siteaccesses);
-        self::assertSame('fossilexit', $result->matchedSiteaccess);
-        self::assertSame(42, $result->rootLocationId);
-    }
-
-    public function testExploreFuzzyMatchesFossilExitToFossilexit(): void
-    {
-        $service = $this->makeService(['fossilexit', 'mattcch']);
-        $cr = $this->makeConfigResolver(42);
-        $registry = new ToolRegistry();
-
-        $explorer = new SiteExplorer($service, $cr, $registry, new NullLogger());
-        $result = $explorer->explore('fossil exit');
-
-        self::assertSame('fossilexit', $result->matchedSiteaccess);
-    }
-
-    public function testExploreFuzzyMatchesWithUnderscoresAndDashes(): void
-    {
-        $service = $this->makeService(['mattcch_test']);
-        $cr = $this->makeConfigResolver(42);
-        $registry = new ToolRegistry();
-
-        $explorer = new SiteExplorer($service, $cr, $registry, new NullLogger());
-        $result = $explorer->explore('mattcch-test');
-
-        self::assertSame('mattcch_test', $result->matchedSiteaccess);
-    }
-
-    public function testExploreReturnsNullMatchWhenNoSiteaccessMatches(): void
-    {
-        $service = $this->makeService(['admin', 'mattcch']);
-        $cr = $this->makeConfigResolver(42);
-        $registry = new ToolRegistry();
-
-        $explorer = new SiteExplorer($service, $cr, $registry, new NullLogger());
-        $result = $explorer->explore('unknown_site');
-
+        self::assertSame(['admin', 'mattcch'], $result->siteaccesses);
         self::assertNull($result->matchedSiteaccess);
         self::assertNull($result->rootLocationId);
         self::assertSame([], $result->siteStructure);
         self::assertSame([], $result->parentCandidates);
+        self::assertSame([], $this->asked, 'nothing is read for no site');
     }
 
-    public function testExploreCallsAllThreeToolsWhenMatched(): void
+    public function testTheSiteIsMatchedLoosely(): void
     {
-        $registry = new ToolRegistry();
-
-        $browse = new class implements ToolInterface {
-            public bool $called = false;
-            public function getName(): string { return CraftToolName::BROWSE_SITE_STRUCTURE; }
-            public function getDescription(): string { return 'mock'; }
-            public function getParameters(): array { return []; }
-            public function execute(array $params): ToolResult
-            {
-                $this->called = true;
-                return ToolResult::ok('ok', ['children' => []]);
-            }
-        };
-
-        $parent = new class implements ToolInterface {
-            public bool $called = false;
-            public function getName(): string { return CraftToolName::FIND_PARENT_CANDIDATES; }
-            public function getDescription(): string { return 'mock'; }
-            public function getParameters(): array { return []; }
-            public function execute(array $params): ToolResult
-            {
-                $this->called = true;
-                return ToolResult::ok('ok', ['candidates' => []]);
-            }
-        };
-
-        $blocks = new class implements ToolInterface {
-            public bool $called = false;
-            public function getName(): string { return CraftToolName::LIST_BLOCKS; }
-            public function getDescription(): string { return 'mock'; }
-            public function getParameters(): array { return []; }
-            public function execute(array $params): ToolResult
-            {
-                $this->called = true;
-                return ToolResult::ok('ok', ['blocks' => []]);
-            }
-        };
-
-        $registry = $registry->register($browse);
-        $registry = $registry->register($parent);
-        $registry = $registry->register($blocks);
-
-        $service = $this->makeService(['fossilexit']);
-        $cr = $this->makeConfigResolver(42);
-
-        $explorer = new SiteExplorer($service, $cr, $registry, new NullLogger());
-        $explorer->explore('fossilexit');
-
-        self::assertTrue($browse->called);
-        self::assertTrue($parent->called);
-        self::assertTrue($blocks->called);
+        self::assertSame('fossilexit', $this->explorer(['fossilexit', 'mattcch'])->explore('fossil exit')->matchedSiteaccess);
+        self::assertSame('mattcch_test', $this->explorer(['mattcch_test'])->explore('mattcch-test')->matchedSiteaccess);
+        self::assertSame('admin', $this->explorer(['admin', 'admin_fossil_exit'])->explore('admin')->matchedSiteaccess, 'an exact name wins');
     }
 
-    public function testExploreReturnsParentBlocksAllowedTypesFromContentCatalog(): void
+    public function testAMatchedSiteGivesItsRootTreeParentsAndBlocks(): void
     {
-        $service = $this->makeService(['fossilexit']);
-        $cr = $this->makeConfigResolver(42);
-        $registry = new ToolRegistry();
+        $result = $this->explorer(['fossilexit'], $this->pageCatalog())->explore('fossilexit');
 
-        $catalog = $this->createContentCatalog([
-            'Content' => [
-                'page' => [
-                    'name' => 'Page',
-                    'fields' => [
-                        'blocks' => [
-                            'type' => 'ibexa_object_relation_list',
-                            'settings' => ['selectionContentTypes' => ['hero_banner', 'text_block', 'info_cards']],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
-
-        $explorer = new SiteExplorer($service, $cr, $registry, new NullLogger(), $catalog);
-        $result = $explorer->explore('fossilexit');
-
-        self::assertSame(['hero_banner', 'text_block', 'info_cards'], $result->parentBlocksAllowedTypes);
+        self::assertSame(42, $result->rootLocationId);
+        self::assertSame('fossilexit', $result->siteStructure['siteaccess']);
+        self::assertSame('About', $result->siteStructure['children'][0]['name']);
+        self::assertSame([['location_id' => 50, 'name' => 'About', 'content_type' => 'page', 'siteaccess' => 'fossilexit']], $result->parentCandidates);
+        self::assertSame(['hero_banner', 'info_cards', 'orphan'], array_keys($result->blockTypes));
+        self::assertSame(['hero_banner', 'info_cards', 'orphan'], $result->parentBlocksAllowedTypes);
+        self::assertSame([['tree', 42], ['parents:page', 42]], $this->asked, 'the pages are the conventions\' page type');
     }
 
-    public function testExploreReturnsEmptyAllowedTypesWhenContentCatalogIsNull(): void
+    public function testASiteWithNoRootGivesNoTreeAndNoParents(): void
     {
-        $service = $this->makeService(['fossilexit']);
-        $cr = $this->makeConfigResolver(42);
-        $registry = new ToolRegistry();
+        $result = $this->explorer(['no_root'])->explore('no_root');
 
-        $explorer = new SiteExplorer($service, $cr, $registry, new NullLogger(), null);
-        $result = $explorer->explore('fossilexit');
-
-        self::assertSame([], $result->parentBlocksAllowedTypes);
+        self::assertSame('no_root', $result->matchedSiteaccess);
+        self::assertSame([], $result->siteStructure);
+        self::assertSame([], $result->parentCandidates);
+        self::assertSame([], $this->asked);
     }
 
-    public function testExploreReturnsEmptyAllowedTypesWhenPageNotInCatalog(): void
+    public function testATreeThatCannotBeReadLeavesTheRestOfTheAnswer(): void
     {
-        $service = $this->makeService(['fossilexit']);
-        $cr = $this->makeConfigResolver(42);
-        $registry = new ToolRegistry();
+        $result = $this->explorer(['fossilexit'], $this->pageCatalog(), null, true)->explore('fossilexit');
 
-        $catalog = $this->createContentCatalog([
-            'Content' => [
-                'article' => [
-                    'name' => 'Article',
-                    'fields' => ['title' => 'ibexa_string'],
-                ],
-            ],
-        ]);
+        self::assertFalse($result->hasError());
+        self::assertSame([], $result->siteStructure);
+        self::assertNotSame([], $result->parentCandidates);
+        self::assertNotSame([], $result->blockTypes);
+    }
 
-        $explorer = new SiteExplorer($service, $cr, $registry, new NullLogger(), $catalog);
-        $result = $explorer->explore('fossilexit');
+    public function testTheBlocksAPageAcceptsComeFromTheCatalogWhenThereIsOne(): void
+    {
+        self::assertSame([], $this->explorer(['fossilexit'])->explore('fossilexit')->parentBlocksAllowedTypes, 'no catalog');
 
-        self::assertSame([], $result->parentBlocksAllowedTypes);
+        $articles = $this->createContentCatalog(['Content' => ['article' => ['name' => 'Article', 'fields' => ['title' => 'ibexa_string']]]]);
+        self::assertSame([], $this->explorer(['fossilexit'], $articles)->explore('fossilexit')->parentBlocksAllowedTypes, 'no page type');
     }
 
     public function testBlocksTheThemeOfTheSiteHasNoTemplateForAreNotOffered(): void
     {
-        $blocks = new class implements ToolInterface {
-            public function getName(): string { return CraftToolName::LIST_BLOCKS; }
-            public function getDescription(): string { return 'mock'; }
-            public function getParameters(): array { return []; }
-            public function execute(array $params): ToolResult
+        $shown = new class() implements ShownBlocks {
+            public ?string $asked = null;
+
+            public function forSiteaccess(string $siteaccess): array
             {
-                return ToolResult::ok('ok', ['blocks' => [['identifier' => 'hero_banner'], ['identifier' => 'info_cards'], ['identifier' => 'orphan']]]);
+                $this->asked = $siteaccess;
+
+                return ['hero_banner', 'info_cards'];
             }
         };
-        $registry = (new ToolRegistry())->register($blocks);
-        $catalog = $this->createContentCatalog(['Content' => ['page' => ['name' => 'Page', 'fields' => ['blocks' => [
-            'type' => 'ibexa_object_relation_list',
-            'settings' => ['selectionContentTypes' => ['hero_banner', 'info_cards', 'orphan']],
-        ]]]]]);
-        $shown = new class implements \Masilia\Contracts\IbexaBlocks\ShownBlocks {
-            public ?string $asked = null;
-            public function forSiteaccess(string $siteaccess): array { $this->asked = $siteaccess; return ['hero_banner', 'info_cards']; }
-        };
 
-        $explorer = new SiteExplorer($this->makeService(['fossilexit']), $this->makeConfigResolver(42), $registry, new NullLogger(), $catalog, new \Masilia\Bundle\IbexaAiCraft\Support\Conventions(), $shown);
-        $result = $explorer->explore('fossilexit');
+        $result = $this->explorer(['fossilexit'], $this->pageCatalog(), $shown)->explore('fossilexit');
 
         self::assertSame('fossilexit', $shown->asked);
         self::assertSame(['hero_banner', 'info_cards'], array_column($result->blockTypes, 'identifier'));

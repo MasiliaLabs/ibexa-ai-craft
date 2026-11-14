@@ -18,6 +18,15 @@ final class ConventionsTest extends TestCase
         self::assertSame('blocks', $conventions->blocksField);
         self::assertSame('items', $conventions->itemsField);
         self::assertContains('Block items', $conventions->contentGroups);
+        self::assertSame(['site', 'home_page', 'layout_config', 'folder'], [$conventions->siteType, $conventions->homePageType, $conventions->layoutType, $conventions->folderType]);
+    }
+
+    public function testTheTypesOfASiteAreSettingsToo(): void
+    {
+        $conventions = Conventions::fromSettings(['site_type' => 'website', 'home_page_type' => 'landing', 'layout_type' => 'chrome', 'folder_type' => 'directory']);
+
+        self::assertSame(['website', 'landing', 'chrome', 'directory'], [$conventions->siteType, $conventions->homePageType, $conventions->layoutType, $conventions->folderType]);
+        self::assertSame('page', $conventions->pageType);
     }
 
     public function testAProjectSetsItsOwnAndKeepsTheRest(): void

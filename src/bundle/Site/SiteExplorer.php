@@ -4,35 +4,28 @@ declare(strict_types=1);
 
 namespace Masilia\Bundle\IbexaAiCraft\Site;
 
-use Ibexa\Contracts\Core\SiteAccess\ConfigResolverInterface;
 use Ibexa\Core\MVC\Symfony\SiteAccess\SiteAccessServiceInterface;
+use Masilia\Bundle\IbexaAiCraft\Catalog\BlockCatalog;
 use Masilia\Bundle\IbexaAiCraft\Catalog\ContentCatalog;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
+use Masilia\Contracts\IbexaAi\Site\SiteLocations;
 use Masilia\Contracts\IbexaBlocks\ShownBlocks;
-use Masilia\Bundle\IbexaAiCraft\Tool\CraftToolName;
-use Masilia\Bundle\IbexaAi\Agent\Tool\ToolRegistry;
-use Masilia\Bundle\IbexaAi\Agent\Tool\ToolResult;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
- * Composite exploration worker.
- *
- * Solves the admin-vs-front-office problem:
- * - The user is in admin context (which is its own siteaccess)
- * - They want to manage front-office siteaccesses (e.g. "fossilexit")
- * - We must discover front-office siteaccesses, match user input to one,
- *   resolve its root location, then browse the subtree under that root.
- *
- * All four exploration steps are executed in a single worker call so the
- * orchestrator LLM only sees ONE tool call, not four separate calls.
+ * What the assistant needs to know of a front-office site before it builds pages there, in one answer: the siteaccesses
+ * (the editor works in the admin, which is a siteaccess of its own), the one the user means (matched loosely: "fossil
+ * exit" is "fossilexit"), its root, its tree, where a page can go, and the blocks a page takes.
  */
 final readonly class SiteExplorer
 {
     public function __construct(
         private SiteAccessServiceInterface $siteAccessService,
-        private ConfigResolverInterface    $configResolver,
-        private ToolRegistry               $toolRegistry,
+        private SiteLocations              $locations,
+        private SiteTree                   $tree,
+        private ParentCandidates           $parents,
+        private BlockCatalog               $blocks,
         private LoggerInterface            $aiLogger,
         private ?ContentCatalog            $contentCatalog = null,
         private Conventions                $conventions = new Conventions(),
@@ -53,10 +46,10 @@ final readonly class SiteExplorer
             $notShownBlockTypes = [];
 
             if ($matched !== null) {
-                $rootLocationId = $this->resolveRoot($matched);
-                $siteStructure = $this->browse($matched);
-                $parentCandidates = $this->findParents($matched);
-                $blockTypes = $this->listBlocks();
+                $rootLocationId = $this->locations->rootLocationId($matched);
+                $siteStructure = $rootLocationId !== null ? $this->browse($matched, $rootLocationId) : [];
+                $parentCandidates = $rootLocationId !== null ? $this->findParents($matched, $rootLocationId) : [];
+                $blockTypes = $this->blocks->getAvailableBlocks();
                 $parentBlocksAllowedTypes = $this->resolveParentBlocksAllowedTypes();
 
                 // A block the theme of the site has no template for is not shown there (the page answers 404): do not offer it.
@@ -143,68 +136,36 @@ final readonly class SiteExplorer
         return strtolower(str_replace(['_', '-', ' '], '', $s));
     }
 
-    private function resolveRoot(string $siteaccess): ?int
-    {
-        try {
-            return (int) $this->configResolver->getParameter(
-                'content.tree_root.location_id',
-                scope: $siteaccess,
-            );
-        } catch (Throwable $e) {
-            $this->aiLogger->warning('[SiteExplorer] Could not resolve root for {siteaccess}: {message}', [
-                'siteaccess' => $siteaccess,
-                'message' => $e->getMessage(),
-            ]);
-            return null;
-        }
-    }
-
     /**
+     * The tree of the site, two levels deep; empty when it cannot be read (what else the answer has is still useful).
+     *
      * @return array<string, mixed>
      */
-    private function browse(string $siteaccess): array
+    private function browse(string $siteaccess, int $rootLocationId): array
     {
-        $tool = $this->toolRegistry->get(CraftToolName::BROWSE_SITE_STRUCTURE);
-        if ($tool === null) {
+        try {
+            return ['siteaccess' => $siteaccess] + $this->tree->under($rootLocationId, 2);
+        } catch (Throwable $e) {
+            $this->aiLogger->warning('[SiteExplorer] The tree of {siteaccess} could not be read: {message}', ['siteaccess' => $siteaccess, 'message' => $e->getMessage()]);
+
             return [];
         }
-        $result = $tool->execute([
-            'siteaccess' => $siteaccess,
-            'depth' => 2,
-        ]);
-
-        return $result->success ? $result->data : [];
     }
 
     /**
+     * The pages of the site, where a new page can go.
+     *
      * @return list<array<string, mixed>>
      */
-    private function findParents(string $siteaccess): array
+    private function findParents(string $siteaccess, int $rootLocationId): array
     {
-        $tool = $this->toolRegistry->get(CraftToolName::FIND_PARENT_CANDIDATES);
-        if ($tool === null) {
+        try {
+            return array_map(static fn (array $candidate): array => $candidate + ['siteaccess' => $siteaccess], $this->parents->under($rootLocationId, $this->conventions->pageType));
+        } catch (Throwable $e) {
+            $this->aiLogger->warning('[SiteExplorer] The pages of {siteaccess} could not be read: {message}', ['siteaccess' => $siteaccess, 'message' => $e->getMessage()]);
+
             return [];
         }
-        $result = $tool->execute([
-            'content_type' => $this->conventions->pageType,
-            'siteaccess' => $siteaccess,
-        ]);
-
-        return $result->success ? ($result->data['candidates'] ?? []) : [];
-    }
-
-    /**
-     * @return list<array<string, mixed>>
-     */
-    private function listBlocks(): array
-    {
-        $tool = $this->toolRegistry->get(CraftToolName::LIST_BLOCKS);
-        if ($tool === null) {
-            return [];
-        }
-        $result = $tool->execute([]);
-
-        return $result->success ? ($result->data['blocks'] ?? []) : [];
     }
 
     /**

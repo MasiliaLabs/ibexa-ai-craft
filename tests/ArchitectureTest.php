@@ -11,24 +11,14 @@ use RecursiveIteratorIterator;
 
 /**
  * Craft builds on the public API of masilia/ibexa-ai, Masilia\Contracts\IbexaAi, so that a change inside the OS cannot
- * break it. The list below is what it still takes from the inside of the OS, file by file, until its tools are services
- * of its own (phase 4 of the rework): it only gets shorter. A new use of the inside fails, and so does a line of the list
- * that is no longer true.
+ * break it: its code names no other class of the OS. (Its tests may: they run against the real implementations.)
  */
 final class ArchitectureTest extends TestCase
 {
     private const SRC = __DIR__ . '/../src/bundle';
 
-    private const STILL_INTERNAL = [
-        'Capability/CreateStructureCapability.php' => ['Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolInterface', 'Masilia\\Bundle\\IbexaAi\\Os\\Capability\\BaseCapability'],
-        'Catalog/BlockCatalog.php' => ['Masilia\\Bundle\\IbexaAi\\Support\\FieldType'],
-        'Site/ItemsCreator.php' => ['Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ContentFactoryInterface', 'Masilia\\IbexaAi\\Suggestion\\LanguageCode'],
-        'Site/SiteExplorer.php' => ['Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolRegistry', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolResult'],
-        'Tool/BrowseSiteStructureTool.php' => ['Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\AgentErrorHelper', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolInterface', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolResult', 'Masilia\\Bundle\\IbexaAi\\Support\\AiConstants'],
-        'Tool/CreateSiteStructureTool.php' => ['Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\AgentErrorHelper', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ContentCreator', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ContentUpdater', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ImageFileHelper', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolInterface', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolResult', 'Masilia\\Bundle\\IbexaAi\\Support\\AiConstants'],
-        'Tool/FindParentCandidatesTool.php' => ['Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\AgentErrorHelper', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolInterface', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolResult'],
-        'Tool/ListBlockTypesTool.php' => ['Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolInterface', 'Masilia\\Bundle\\IbexaAi\\Agent\\Tool\\ToolResult'],
-    ];
+    /** What it still takes from the inside of the OS, file by file: nothing, and it stays so. */
+    private const STILL_INTERNAL = [];
 
     public function testCraftTakesFromTheOsOnlyItsContractsAndWhatTheListStillAllows(): void
     {

@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Masilia\IbexaAiCraft\Tests\Capability;
 
 use Ibexa\Contracts\Core\Repository\Repository;
-use Masilia\Bundle\IbexaAi\Agent\Tool\ContentFactoryInterface;
-use Masilia\Bundle\IbexaAi\Agent\Tool\ToolInterface;
 use Masilia\Bundle\IbexaAiCraft\Capability\AddBlocksCapability;
-use Masilia\Bundle\IbexaAi\Agent\Tool\SiteaccessLocationResolver;
 use Masilia\Bundle\IbexaAiCraft\Capability\ConventionsCapability;
 use Masilia\Bundle\IbexaAiCraft\Capability\CreateStructureCapability;
 use Masilia\Bundle\IbexaAiCraft\Capability\ExploreCapability;
@@ -16,7 +13,10 @@ use Masilia\Bundle\IbexaAiCraft\Mining\ConventionMiner;
 use Masilia\Bundle\IbexaAiCraft\Site\ItemsCreator;
 use Masilia\Bundle\IbexaAiCraft\Site\SiteExplorer;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
-use Masilia\Bundle\IbexaAiCraft\Tool\CraftToolName;
+use Masilia\Bundle\IbexaAiCraft\Site\SiteBuilder;
+use Masilia\Contracts\IbexaAi\Content\ContentWriter;
+use Masilia\Contracts\IbexaAi\Content\Languages;
+use Masilia\Contracts\IbexaAi\Site\SiteLocations;
 use Masilia\Contracts\IbexaAi\Os\Capability;
 use Masilia\Contracts\IbexaAi\Os\Risk;
 use Masilia\IbexaAi\Os\SchemaValidator;
@@ -36,14 +36,15 @@ final class CapabilitiesTest extends TestCase
         $test = new self('capabilities');
         $repository = $test->createMock(Repository::class);
         $conventions = new Conventions();
-        $creator = new ItemsCreator($repository, $test->createMock(ContentFactoryInterface::class), $conventions);
+        $creator = new ItemsCreator($repository, $test->createMock(ContentWriter::class), $test->createMock(Languages::class), $conventions);
+        $builder = (new \ReflectionClass(SiteBuilder::class))->newInstanceWithoutConstructor();
         $explorer = (new \ReflectionClass(SiteExplorer::class))->newInstanceWithoutConstructor();
 
         foreach ([
             new ExploreCapability($explorer),
             new AddBlocksCapability($creator, $repository, $conventions),
-            new CreateStructureCapability($test->createMock(ToolInterface::class)),
-            new ConventionsCapability(new ConventionMiner($repository, $conventions), $test->createMock(SiteaccessLocationResolver::class), $repository),
+            new CreateStructureCapability($builder),
+            new ConventionsCapability(new ConventionMiner($repository, $conventions), $test->createMock(SiteLocations::class), $repository),
         ] as $capability) {
             yield $capability->name() => [$capability];
         }

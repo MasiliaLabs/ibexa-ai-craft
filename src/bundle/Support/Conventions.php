@@ -16,13 +16,21 @@ final readonly class Conventions
      * @param string       $pageType      The content type of a page
      * @param string       $blocksField   The field of a page that holds its blocks (a list of relations)
      * @param string       $itemsField    The field of a block that holds its child items, when it has some
+     * @param string       $siteType      The content type of the container of a site (its title, domain, description, favicon)
+     * @param string       $homePageType  The content type of the home page of a site (a page of blocks)
+     * @param string       $layoutType    The content type of the layout configuration of a site (its back-office title)
+     * @param string       $folderType    The content type of a folder (its name)
      */
     public function __construct(
         public string $blockGroup = 'Blocks',
         public array $contentGroups = ['Content', 'Block items', 'Media', 'Taxonomies', 'Configurations'],
-        public string $pageType = ContentTypeId::PAGE,
-        public string $blocksField = FieldId::BLOCKS,
+        public string $pageType = 'page',
+        public string $blocksField = 'blocks',
         public string $itemsField = 'items',
+        public string $siteType = 'site',
+        public string $homePageType = 'home_page',
+        public string $layoutType = 'layout_config',
+        public string $folderType = 'folder',
     ) {
     }
 
@@ -39,6 +47,10 @@ final readonly class Conventions
             pageType: (string) ($settings['page_type'] ?? $defaults->pageType),
             blocksField: (string) ($settings['blocks_field'] ?? $defaults->blocksField),
             itemsField: (string) ($settings['items_field'] ?? $defaults->itemsField),
+            siteType: (string) ($settings['site_type'] ?? $defaults->siteType),
+            homePageType: (string) ($settings['home_page_type'] ?? $defaults->homePageType),
+            layoutType: (string) ($settings['layout_type'] ?? $defaults->layoutType),
+            folderType: (string) ($settings['folder_type'] ?? $defaults->folderType),
         );
     }
 }

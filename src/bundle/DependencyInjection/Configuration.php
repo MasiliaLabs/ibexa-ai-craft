@@ -27,6 +27,10 @@ final class Configuration implements ConfigurationInterface
                         ->scalarNode('page_type')->defaultValue('page')->info('The content type of a page')->end()
                         ->scalarNode('blocks_field')->defaultValue('blocks')->info('The field of a page that holds its blocks')->end()
                         ->scalarNode('items_field')->defaultValue('items')->info('The field of a block that holds its child items')->end()
+                        ->scalarNode('site_type')->defaultValue('site')->info('The content type of the container of a site, made by site.create_structure (fields title, domain, description, favicon)')->end()
+                        ->scalarNode('home_page_type')->defaultValue('home_page')->info('The content type of the home page of a site (title and the blocks field)')->end()
+                        ->scalarNode('layout_type')->defaultValue('layout_config')->info('The content type of the layout configuration of a site (field bo_title)')->end()
+                        ->scalarNode('folder_type')->defaultValue('folder')->info('The content type of a folder (field name)')->end()
                     ->end()
                 ->end()
             ->end();

@@ -25,19 +25,7 @@ parameters:
 			path: src/bundle/Site/ItemsCreator.php
 
 		-
-			message: '#^Offset ''content'' on array\{content\: Ibexa\\Contracts\\Core\\Repository\\Values\\Content\\Content, location\: Ibexa\\Contracts\\Core\\Repository\\Values\\Content\\Location\|null\} in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
-			count: 1
-			path: src/bundle/Site/ItemsCreator.php
-
-		-
 			message: '#^Property Ibexa\\Contracts\\Core\\Repository\\Values\\Content\\ContentInfo\:\:\$name \(string\) on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.property
 			count: 1
 			path: src/bundle/Site/ItemsCreator.php
-
-		-
-			message: '#^Offset ''content'' on array\{content\: Ibexa\\Contracts\\Core\\Repository\\Values\\Content\\Content, location\: Ibexa\\Contracts\\Core\\Repository\\Values\\Content\\Location\|null\} in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
-			count: 1
-			path: src/bundle/Tool/CreateSiteStructureTool.php

@@ -75,6 +75,27 @@ final readonly class CraftSelftestScenario implements SelftestScenario
 
         $context->step('the conventions of the pages are mined', 'site.conventions', ['location_id' => $context->parentLocationId], static fn (array $d): ?string => ($d['pages'] ?? 0) >= 1 && ($d['block_types'] ?? []) !== [] ? null : 'the page was not read', 'conventions');
 
+        // A whole site, under the throwaway location (its media folder goes under the media root: it is tracked too). No image
+        // is made: the selftest does not call the image model.
+        $site = ['site_name' => 'Selftest ' . $context->stamp, 'domain' => 'selftest-' . $context->stamp . '.test', 'parent_location_id' => $context->parentLocationId, 'generate_images' => false, 'pages' => [['title' => 'About'], ['title' => 'Projects', 'children' => [['title' => 'One']]]]];
+        $context->step('create a site with its pages', 'site.create_structure', $site, static fn (array $d): ?string => isset($d['site_id'], $d['media_folder_id']) && count($d['pages'] ?? []) === 2 && count($d['pages'][1]['children'] ?? []) === 1 ? null : 'the site or its pages are missing', 'site');
+        foreach (['site_id', 'media_folder_id'] as $key) {
+            if (($id = (int) ($context->answer('site')[$key] ?? 0)) > 0) {
+                $context->track($id);
+            }
+        }
+        // Read from the tree itself, not from the search index (which can lag behind what was just published).
+        $built = $context->answer('site');
+        $home = (int) ($built['home_page_location_id'] ?? 0);
+        $projects = (int) ($built['pages'][1]['location_id'] ?? 0);
+        $context->step('a page of the second level is under its parent, under the home page', 'location.list', ['content_id' => (int) ($built['pages'][1]['children'][0]['content_id'] ?? 0)], static function (array $d) use ($home, $projects): ?string {
+            $location = $d['locations'][0] ?? [];
+
+            return ($location['parent_location_id'] ?? 0) === $projects && str_contains((string) ($location['path'] ?? ''), '/' . $home . '/') ? null : 'the page "One" is not under "Projects" under the home page';
+        });
+        $context->step('a site in an unknown language is refused', 'site.create_structure', ['language' => 'xx'] + $site, null, null, true);
+        $context->step('a page with no title is refused', 'site.create_structure', ['pages' => [['title' => '']]] + $site, null, null, true);
+
         if ($allowed !== []) {
             $refused = $this->typeNotIn($allowed);
             $context->step('a type the page does not take is refused', 'site.add_blocks', ['content_id' => $pageId, 'items' => [['type' => $refused]]], null, null, true);
