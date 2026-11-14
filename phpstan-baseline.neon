@@ -1,0 +1,43 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to function is_iterable\(\) with iterable\<Ibexa\\Contracts\\Core\\Repository\\Values\\ContentType\\ContentType\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/bundle/Catalog/BlockCatalog.php
+
+		-
+			message: '#^Call to function is_iterable\(\) with iterable\<Ibexa\\Contracts\\Core\\Repository\\Values\\ContentType\\ContentType\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/bundle/Catalog/ContentCatalog.php
+
+		-
+			message: '#^Call to function array_is_list\(\) with non\-empty\-list\<array\<string, mixed\>\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/bundle/Site/ItemsCreator.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/bundle/Site/ItemsCreator.php
+
+		-
+			message: '#^Offset ''content'' on array\{content\: Ibexa\\Contracts\\Core\\Repository\\Values\\Content\\Content, location\: Ibexa\\Contracts\\Core\\Repository\\Values\\Content\\Location\|null\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: src/bundle/Site/ItemsCreator.php
+
+		-
+			message: '#^Property Ibexa\\Contracts\\Core\\Repository\\Values\\Content\\ContentInfo\:\:\$name \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: src/bundle/Site/ItemsCreator.php
+
+		-
+			message: '#^Offset ''content'' on array\{content\: Ibexa\\Contracts\\Core\\Repository\\Values\\Content\\Content, location\: Ibexa\\Contracts\\Core\\Repository\\Values\\Content\\Location\|null\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: src/bundle/Tool/CreateSiteStructureTool.php

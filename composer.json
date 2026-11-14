@@ -5,12 +5,18 @@
     "license": "proprietary",
     "require": {
         "php": ">=8.3",
+        "ibexa/core": "^5.0",
         "masilia/ibexa-ai": "^0.5",
+        "psr/cache": "^3.0",
+        "psr/log": "^3.0",
         "symfony/config": "^7.4",
+        "symfony/console": "^7.4",
         "symfony/dependency-injection": "^7.4",
         "symfony/http-kernel": "^7.4"
     },
     "require-dev": {
+        "masilia/ibexa-blocks": "^0.2",
+        "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^11.5"
     },
     "autoload": {
@@ -23,10 +29,28 @@
             "Masilia\\IbexaAiCraft\\Tests\\": "tests/"
         }
     },
-    "config": {
-        "sort-packages": true
-    },
     "suggest": {
         "masilia/ibexa-blocks": "When installed, its conventions (page type, blocks field…) are the ones the assistant follows"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:masilia/ibexa-ai.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:masilia/ibexa-blocks.git"
+        }
+    ],
+    "scripts": {
+        "phpunit": "phpunit",
+        "phpstan": "phpstan analyse --memory-limit=1G",
+        "test": [
+            "@phpunit",
+            "@phpstan"
+        ]
+    },
+    "config": {
+        "sort-packages": true
     }
 }
