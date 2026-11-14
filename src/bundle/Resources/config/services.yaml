@@ -29,6 +29,10 @@ services:
     Masilia\Bundle\IbexaAiCraft\Capability\:
         resource: '../../Capability/'
 
+    Masilia\Bundle\IbexaAiCraft\Capability\ThemeCreateCapability:
+        arguments:
+            $enabled: '%ibexa_ai_craft.theme_creation%'
+
     Masilia\Bundle\IbexaAiCraft\Skill\:
         resource: '../../Skill/'
 

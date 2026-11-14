@@ -20,6 +20,7 @@ final class MasiliaIbexaAiCraftExtension extends Extension
     {
         $config = $this->processConfiguration(new Configuration(), $configs);
         $container->setParameter('ibexa_ai_craft.conventions', $config['conventions']);
+        $container->setParameter('ibexa_ai_craft.theme_creation', $config['theme_creation']);
 
         (new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config')))->load('services.yaml');
     }

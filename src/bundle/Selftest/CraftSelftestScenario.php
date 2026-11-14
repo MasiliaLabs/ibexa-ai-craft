@@ -73,6 +73,18 @@ final readonly class CraftSelftestScenario implements SelftestScenario
         ]);
         $context->step('the page lists three', 'relations.list', ['content_id' => $pageId], static fn (array $d): ?string => ($d['outgoing_total'] ?? 0) >= 3 ? null : 'a block was lost');
 
+        $context->step('the page is described block by block', 'page.describe', ['content_id' => $pageId], static fn (array $d): ?string => count($d['blocks'] ?? []) === 3 ? null : 'expected 3 blocks', 'described');
+        $last = (int) (($context->answer('described')['blocks'][2]['content_id'] ?? 0));
+        $first = (int) (($context->answer('described')['blocks'][0]['content_id'] ?? 0));
+        $context->step('the last block goes first', 'page.block.move', ['content_id' => $pageId, 'block_content_id' => $last, 'position' => 0]);
+        $context->step('the page shows it first', 'page.describe', ['content_id' => $pageId], static fn (array $d): ?string => ($d['blocks'][0]['content_id'] ?? 0) === $last ? null : 'the order did not change');
+        $context->step('a block that is not on the page is refused', 'page.block.move', ['content_id' => $pageId, 'block_content_id' => 1, 'position' => 0], null, null, true);
+        $context->step('a block is taken off the page', 'page.block.remove', ['content_id' => $pageId, 'block_content_id' => $first]);
+        $context->step('the page keeps the two others', 'page.describe', ['content_id' => $pageId], static fn (array $d): ?string => count($d['blocks'] ?? []) === 2 ? null : 'expected 2 blocks');
+        $context->step('the themes are listed', 'theme.list', [], static fn (array $d): ?string => ($d['designs'] ?? []) !== [] ? null : 'no design');
+        $context->step('a design that does not exist is refused', 'theme.check', ['design' => 'no_such_design'], null, null, true);
+        $context->step('the cards of a site are listed', 'item.types', ['siteaccess' => 'site'], static fn (array $d): ?string => is_array($d['items'] ?? null) ? null : 'no list');
+
         $context->step('the conventions of the pages are mined', 'site.conventions', ['location_id' => $context->parentLocationId], static fn (array $d): ?string => ($d['pages'] ?? 0) >= 1 && ($d['block_types'] ?? []) !== [] ? null : 'the page was not read', 'conventions');
 
         // A whole site, under the throwaway location (its media folder goes under the media root: it is tracked too). No image

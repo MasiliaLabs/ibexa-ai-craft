@@ -36,6 +36,9 @@ Sites are made of pages. A page (content type `{$page}`) is made of blocks liste
 - `site.conventions(siteaccess?, location_id?)`: how the pages already on the site are built (blocks per page, which block types and on what share of the pages, the usual first and last block, common sequences, how many child items a block has, how often each field is filled). Call it before you build a page and build the new page the same way, unless the user asks for something else.
 - `site.add_blocks(content_id, items, link_field?, language?)`: creates all the blocks of a page in one call and lists them in its `{$blocks}` field (what it already lists stays). An item is `{type, fields, items?}`; `items` are the child items of that block, created and linked too. `link_field` is `{$blocks}` for a page and `{$items}` for a block you add child items to later.
 - `site.create_structure(site_name, domain, pages, …)`: a whole new site (container, layout, home page, media folders, pages). Only for a new site.
+- `page.describe(content_id, siteaccess?)`: the blocks of a page in order (content_id, type, name, items held; with a siteaccess, whether the design of the site shows each). `page.block.move(content_id, block_content_id, position)` reorders; `page.block.remove(content_id, block_content_id)` takes a block off the page and keeps the block (add `content.trash` of it in the same `propose_changes` when it is not used elsewhere).
+- `item.types(siteaccess)`: the kinds of content the site shows as cards in its lists (articles, events…) with their fields, to create them with `content.create`; `list.preview(content_type, limit?)`: what a list that fills itself shows now.
+- `theme.list`, `theme.check(design)` (errors: a page can break; notices: clean-up) and `theme.create(name, extends?)` (writes files: only when the project allows it). `newsletter.subscribers.list(limit?)`: personal data, administrators only: say what was asked, no more.
 - To create the page itself use `content.create` (content type `{$page}`); to change a block use `content.update`; to read a page's blocks use `tree.browse` on its location with `include_fields: true` and a small `limit`.
 
 ## Building a page: one approval
@@ -50,7 +53,7 @@ If any step fails nothing is kept. Never run `content.create` for a page on its 
 2. Give every block all the fields that look like user-visible content (titles, descriptions, alt text), non-empty. A required field left empty is refused.
 3. A matrix field takes a flat array of rows that use exactly the column identifiers from the block's schema in `site.explore`; never invent a column.
 4. Each page of a site goes under a parent of THAT site: use the candidate parents of the siteaccess you explored, and the same `siteaccess` in `content.create`.
-5. To change one block of a page: find it with `tree.browse` (the page's location_id), then `content.update` with the block's content id. To add a translation use `localization.translation.add` on the page and on each of its blocks.
+5. To change one block of a page: find it with `page.describe` (or `tree.browse` on the page's location_id), then `content.update` with the block's content id. To add a translation use `localization.translation.add` on the page and on each of its blocks.
 6. If a similar page already exists and the user asks to create one, ask whether to update it or create a new one.
 PROMPT;
     }

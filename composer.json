@@ -6,16 +6,16 @@
     "require": {
         "php": ">=8.3",
         "ibexa/core": "^5.0",
-        "masilia/ibexa-ai": "^0.6",
+        "masilia/ibexa-ai": "^1.0",
         "psr/cache": "^3.0",
         "psr/log": "^3.0",
         "symfony/config": "^7.4",
         "symfony/console": "^7.4",
         "symfony/dependency-injection": "^7.4",
-        "symfony/http-kernel": "^7.4"
+        "symfony/http-kernel": "^7.4",
+        "masilia/ibexa-blocks": "^0.3"
     },
     "require-dev": {
-        "masilia/ibexa-blocks": "^0.2",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^11.5"
     },
@@ -28,9 +28,6 @@
         "psr-4": {
             "Masilia\\IbexaAiCraft\\Tests\\": "tests/"
         }
-    },
-    "suggest": {
-        "masilia/ibexa-blocks": "When installed, its conventions (page type, blocks field…) are the ones the assistant follows"
     },
     "repositories": [
         {
@@ -52,5 +49,10 @@
     },
     "config": {
         "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-v1": "1.0.x-dev"
+        }
     }
 }

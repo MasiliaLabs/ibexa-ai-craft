@@ -33,6 +33,10 @@ final class Configuration implements ConfigurationInterface
                         ->scalarNode('folder_type')->defaultValue('folder')->info('The content type of a folder (field name)')->end()
                     ->end()
                 ->end()
+                ->booleanNode('theme_creation')
+                    ->info('Whether theme.create may write the files of a new theme into the project. Off by default: a deployment is not the place to write templates.')
+                    ->defaultFalse()
+                ->end()
             ->end();
 
         return $tree;

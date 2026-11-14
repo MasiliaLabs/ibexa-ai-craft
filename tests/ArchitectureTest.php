@@ -51,4 +51,20 @@ final class ArchitectureTest extends TestCase
 
         self::assertSame([], [...$new, ...$stale], implode("\n", [...$new, ...$stale]));
     }
+
+    public function testCraftTakesFromTheBlocksOnlyItsContracts(): void
+    {
+        $wrong = [];
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(self::SRC, FilesystemIterator::SKIP_DOTS)) as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+            $code = (string) preg_replace('#/\*.*?\*/|//[^\n]*#s', '', (string) file_get_contents($file->getPathname()));
+            if (preg_match_all('/\bMasilia\\(?:Bundle\\)?IbexaBlocks\\[A-Za-z0-9_\\]+/', $code, $names) > 0) {
+                $wrong[] = sprintf('%s uses %s: take it from Masilia\\Contracts\\IbexaBlocks (or add it there).', substr($file->getPathname(), strlen(self::SRC) + 1), implode(', ', array_unique($names[0])));
+            }
+        }
+
+        self::assertSame([], $wrong, implode("\n", $wrong));
+    }
 }

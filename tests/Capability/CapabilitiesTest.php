@@ -4,7 +4,22 @@ declare(strict_types=1);
 
 namespace Masilia\IbexaAiCraft\Tests\Capability;
 
+use Ibexa\Contracts\Core\Repository\ContentTypeService;
 use Ibexa\Contracts\Core\Repository\Repository;
+use Masilia\Bundle\IbexaAiCraft\Capability\ItemTypesCapability;
+use Masilia\Bundle\IbexaAiCraft\Capability\ListPreviewCapability;
+use Masilia\Bundle\IbexaAiCraft\Capability\NewsletterSubscribersCapability;
+use Masilia\Bundle\IbexaAiCraft\Capability\PageBlockMoveCapability;
+use Masilia\Bundle\IbexaAiCraft\Capability\PageBlockRemoveCapability;
+use Masilia\Bundle\IbexaAiCraft\Capability\PageBlocks;
+use Masilia\Bundle\IbexaAiCraft\Capability\PageDescribeCapability;
+use Masilia\Bundle\IbexaAiCraft\Capability\ThemeCheckCapability;
+use Masilia\Bundle\IbexaAiCraft\Capability\ThemeCreateCapability;
+use Masilia\Bundle\IbexaAiCraft\Capability\ThemeListCapability;
+use Masilia\Contracts\IbexaAi\Content\ContentTypeSchemas;
+use Masilia\Contracts\IbexaBlocks\ListPreview;
+use Masilia\Contracts\IbexaBlocks\ShownViews;
+use Masilia\Contracts\IbexaBlocks\Themes;
 use Masilia\Bundle\IbexaAiCraft\Capability\AddBlocksCapability;
 use Masilia\Bundle\IbexaAiCraft\Capability\ConventionsCapability;
 use Masilia\Bundle\IbexaAiCraft\Capability\CreateStructureCapability;
@@ -37,6 +52,7 @@ final class CapabilitiesTest extends TestCase
         $repository = $test->createMock(Repository::class);
         $conventions = new Conventions();
         $creator = new ItemsCreator($repository, $test->createMock(ContentWriter::class), $test->createMock(Languages::class), $conventions);
+        $pages = new PageBlocks($repository, $conventions);
         $builder = (new \ReflectionClass(SiteBuilder::class))->newInstanceWithoutConstructor();
         $explorer = (new \ReflectionClass(SiteExplorer::class))->newInstanceWithoutConstructor();
 
@@ -45,6 +61,15 @@ final class CapabilitiesTest extends TestCase
             new AddBlocksCapability($creator, $repository, $conventions),
             new CreateStructureCapability($builder),
             new ConventionsCapability(new ConventionMiner($repository, $conventions), $test->createMock(SiteLocations::class), $repository),
+            new PageDescribeCapability($pages, $conventions),
+            new PageBlockMoveCapability($pages, $test->createMock(ContentWriter::class), $test->createMock(Languages::class), $conventions),
+            new PageBlockRemoveCapability($pages, $test->createMock(ContentWriter::class), $test->createMock(Languages::class), $conventions),
+            new ThemeListCapability($test->createMock(Themes::class)),
+            new ThemeCheckCapability($test->createMock(Themes::class)),
+            new ThemeCreateCapability($test->createMock(Themes::class)),
+            new ListPreviewCapability($test->createMock(ListPreview::class)),
+            new NewsletterSubscribersCapability(),
+            new ItemTypesCapability($test->createMock(ShownViews::class), $test->createMock(ContentTypeService::class), $test->createMock(ContentTypeSchemas::class), $conventions),
         ] as $capability) {
             yield $capability->name() => [$capability];
         }
@@ -54,7 +79,7 @@ final class CapabilitiesTest extends TestCase
     public function testItIsNamedDescribedAndFollowsItsOwnExamples(Capability $capability): void
     {
         self::assertMatchesRegularExpression('/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/', $capability->name());
-        self::assertStringStartsWith('site.', $capability->name());
+        self::assertContains(explode('.', $capability->name())[0], ['site', 'page', 'theme', 'list', 'newsletter', 'item']);
         self::assertNotSame('', $capability->summary());
         self::assertGreaterThan(40, strlen($capability->description()));
         self::assertSame('object', $capability->inputSchema()['type']);
@@ -68,7 +93,7 @@ final class CapabilitiesTest extends TestCase
     public function testWhatChangesSomethingNamesItsPoliciesAndPreviewsItself(Capability $capability): void
     {
         if ($capability->risk() === Risk::READ) {
-            self::assertSame([['content', 'read']], $capability->requires());
+            self::assertContains($capability->requires(), [[['content', 'read']], [['setup', 'administrate']]]);
 
             return;
         }
