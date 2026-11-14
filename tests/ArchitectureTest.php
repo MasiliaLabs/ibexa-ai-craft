@@ -15,7 +15,7 @@ use RecursiveIteratorIterator;
  */
 final class ArchitectureTest extends TestCase
 {
-    private const SRC = __DIR__ . '/../src/bundle';
+    private const SRC = __DIR__ . '/../src';
 
     /** What it still takes from the inside of the OS, file by file: nothing, and it stays so. */
     private const STILL_INTERNAL = [];

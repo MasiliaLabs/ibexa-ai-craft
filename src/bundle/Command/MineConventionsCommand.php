@@ -7,7 +7,7 @@ namespace Masilia\Bundle\IbexaAiCraft\Command;
 use Ibexa\Contracts\Core\Repository\PermissionResolver;
 use Ibexa\Core\Repository\Values\User\UserReference;
 use Masilia\Contracts\IbexaAi\Site\SiteLocations;
-use Masilia\Bundle\IbexaAiCraft\Mining\ConventionMiner;
+use Masilia\IbexaAiCraft\Mining\ConventionMiner;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

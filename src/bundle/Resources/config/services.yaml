@@ -7,36 +7,36 @@ services:
             $aiLogger: '@logger'
             $cache: '@cache.app'
 
-    Masilia\Bundle\IbexaAiCraft\Support\Conventions:
-        factory: ['Masilia\Bundle\IbexaAiCraft\Support\Conventions', 'fromSettings']
+    Masilia\IbexaAiCraft\Support\Conventions:
+        factory: ['Masilia\IbexaAiCraft\Support\Conventions', 'fromSettings']
         arguments: ['%ibexa_ai_craft.conventions%']
 
-    Masilia\Bundle\IbexaAiCraft\Catalog\:
-        resource: '../../Catalog/'
+    Masilia\IbexaAiCraft\Catalog\:
+        resource: '../../../lib/Catalog/'
 
-    Masilia\Bundle\IbexaAiCraft\Mining\:
-        resource: '../../Mining/'
-        exclude: '../../Mining/PagePatterns.php'
+    Masilia\IbexaAiCraft\Mining\:
+        resource: '../../../lib/Mining/'
+        exclude: '../../../lib/Mining/PagePatterns.php'
 
     Masilia\Bundle\IbexaAiCraft\Command\:
         resource: '../../Command/'
 
-    Masilia\Bundle\IbexaAiCraft\Site\:
-        resource: '../../Site/'
-        exclude: '../../Site/ExplorationResult.php'
+    Masilia\IbexaAiCraft\Site\:
+        resource: '../../../lib/Site/'
+        exclude: '../../../lib/Site/ExplorationResult.php'
 
     # Capabilities and the skill are registered by the interfaces they implement.
-    Masilia\Bundle\IbexaAiCraft\Capability\:
-        resource: '../../Capability/'
+    Masilia\IbexaAiCraft\Capability\:
+        resource: '../../../lib/Capability/'
 
-    Masilia\Bundle\IbexaAiCraft\Capability\ThemeCreateCapability:
+    Masilia\IbexaAiCraft\Capability\ThemeCreateCapability:
         arguments:
             $enabled: '%ibexa_ai_craft.theme_creation%'
 
-    Masilia\Bundle\IbexaAiCraft\Skill\:
-        resource: '../../Skill/'
+    Masilia\IbexaAiCraft\Skill\:
+        resource: '../../../lib/Skill/'
 
     # Steps added to `masilia:ai:os:selftest` (found by the interface they implement).
-    Masilia\Bundle\IbexaAiCraft\Selftest\:
-        resource: '../../Selftest/'
-        exclude: '../../Selftest/RequiredFields.php'
+    Masilia\IbexaAiCraft\Selftest\:
+        resource: '../../../lib/Selftest/'
+        exclude: '../../../lib/Selftest/RequiredFields.php'

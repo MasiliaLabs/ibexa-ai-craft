@@ -21,7 +21,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Masilia\\Bundle\\IbexaAiCraft\\": "src/bundle/"
+            "Masilia\\Bundle\\IbexaAiCraft\\": "src/bundle/",
+            "Masilia\\IbexaAiCraft\\": "src/lib/"
         }
     },
     "autoload-dev": {
