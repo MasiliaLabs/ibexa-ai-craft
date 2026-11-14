@@ -67,4 +67,35 @@ final class ArchitectureTest extends TestCase
 
         self::assertSame([], $wrong, implode("\n", $wrong));
     }
+
+    /** What a bundle may hold: the integration, nothing else. */
+    private const BUNDLE_MAY_HOLD = ['Command', 'DependencyInjection', 'Resources', 'MasiliaIbexaAiCraftBundle.php'];
+
+    public function testTheBundleHoldsTheSymfonyIntegrationOnly(): void
+    {
+        $found = array_values(array_diff(scandir(self::SRC . '/bundle') ?: [], ['.', '..']));
+
+        self::assertSame([], array_values(array_diff($found, self::BUNDLE_MAY_HOLD)), 'The bundle holds what is not integration: it belongs in src/lib.');
+    }
+
+    public function testTheLibKnowsNeitherTheBundleNorTheWiringOfSymfony(): void
+    {
+        $forbidden = ['Masilia\\Bundle\\', 'Symfony\\Component\\HttpKernel\\', 'Symfony\\Bundle\\', 'Symfony\\Component\\Config\\', 'Symfony\\Component\\DependencyInjection\\ContainerBuilder', 'Symfony\\Component\\DependencyInjection\\Extension\\', 'Symfony\\Component\\DependencyInjection\\Compiler\\', 'Symfony\\Component\\HttpFoundation\\'];
+        $wrong = [];
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(self::SRC . '/lib', FilesystemIterator::SKIP_DOTS)) as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+            preg_match_all('/^use ([A-Za-z0-9_\\\\]+)/m', (string) file_get_contents($file->getPathname()), $uses);
+            foreach ($uses[1] as $name) {
+                foreach ($forbidden as $prefix) {
+                    if (str_starts_with($name, $prefix)) {
+                        $wrong[] = sprintf('%s uses %s', substr($file->getPathname(), strlen(self::SRC) + 1), $name);
+                    }
+                }
+            }
+        }
+
+        self::assertSame([], $wrong, implode("\n", $wrong));
+    }
 }
