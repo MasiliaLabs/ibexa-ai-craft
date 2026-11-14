@@ -7,15 +7,13 @@ namespace Masilia\Bundle\IbexaAiCraft\Catalog;
 use Ibexa\Contracts\Core\Repository\ContentTypeService;
 use Ibexa\Contracts\Core\Repository\Exceptions\NotFoundException;
 use Ibexa\Contracts\Core\Repository\Values\ContentType\ContentType;
-use Masilia\Bundle\IbexaAi\Agent\Block\ContentTypeSchemaHelper;
 use Masilia\Bundle\IbexaAi\Support\FieldType;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
+use Masilia\Contracts\IbexaAi\Content\ContentTypeSchemas;
 use Psr\Cache\CacheItemPoolInterface;
 
 final class BlockCatalog
 {
-    use ContentTypeSchemaHelper;
-
     private const CACHE_KEY = 'masilia_ai_craft.block_catalog.available_blocks.v1';
     private const CACHE_TTL = 3600; // 1 hour; invalidated by AI cache warmer too
 
@@ -29,6 +27,7 @@ final class BlockCatalog
     public function __construct(
         private readonly ContentTypeService $contentTypeService,
         private readonly CacheItemPoolInterface $cache,
+        private readonly ContentTypeSchemas $schemas,
         private readonly Conventions $conventions = new Conventions(),
     ) {
     }
@@ -65,7 +64,7 @@ final class BlockCatalog
             $blocks[$type->getIdentifier()] = [
                 'identifier' => $type->getIdentifier(),
                 'name' => $type->getName(),
-                'fields' => $this->buildFieldSchemas($type),
+                'fields' => $this->schemas->fields($type),
             ];
         }
 

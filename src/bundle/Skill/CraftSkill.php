@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Masilia\Bundle\IbexaAiCraft\Skill;
 
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
-use Masilia\IbexaAi\Os\Skill;
+use Masilia\Contracts\IbexaAi\Os\Skill;
 
 /**
  * How sites are built here, told to the assistant: a page is made of blocks, a block can hold child items, and the order

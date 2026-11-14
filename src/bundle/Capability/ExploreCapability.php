@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Masilia\Bundle\IbexaAiCraft\Capability;
 
-use Masilia\Bundle\IbexaAi\Os\Capability\BaseCapability;
+use Masilia\Contracts\IbexaAi\Os\AbstractCapability;
 use Masilia\Bundle\IbexaAiCraft\Site\SiteExplorer;
-use Masilia\IbexaAi\Os\CapabilityResult;
-use Masilia\IbexaAi\Os\Risk;
+use Masilia\Contracts\IbexaAi\Os\CapabilityResult;
+use Masilia\Contracts\IbexaAi\Os\Risk;
 
-final class ExploreCapability extends BaseCapability
+final class ExploreCapability extends AbstractCapability
 {
     public function __construct(private readonly SiteExplorer $explorer)
     {

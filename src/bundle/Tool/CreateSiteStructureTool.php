@@ -13,7 +13,7 @@ use Masilia\Bundle\IbexaAi\Agent\Tool\ImageFileHelper;
 use Masilia\Bundle\IbexaAi\Agent\Tool\ToolInterface;
 use Masilia\Bundle\IbexaAi\Agent\Tool\ToolResult;
 use Masilia\Bundle\IbexaAi\Support\AiConstants;
-use Masilia\Bundle\IbexaAi\Support\ImageGeneratorInterface;
+use Masilia\Contracts\IbexaAi\Image\ImageGenerator;
 use Masilia\Bundle\IbexaAiCraft\Support\ContentTypeId;
 use Masilia\Bundle\IbexaAiCraft\Support\FieldId;
 use Psr\Log\LoggerInterface;
@@ -24,7 +24,7 @@ readonly class CreateSiteStructureTool implements ToolInterface
     public function __construct(
         private Repository $repository,
         private ConfigResolverInterface $configResolver,
-        private ImageGeneratorInterface $imageClient,
+        private ImageGenerator $imageClient,
         private ContentCreator $contentCreator,
         private ContentUpdater $contentUpdater,
         private LoggerInterface $aiLogger,

@@ -6,7 +6,7 @@ namespace Masilia\Bundle\IbexaAiCraft\Command;
 
 use Ibexa\Contracts\Core\Repository\PermissionResolver;
 use Ibexa\Core\Repository\Values\User\UserReference;
-use Masilia\Bundle\IbexaAi\Agent\Tool\SiteaccessLocationResolver;
+use Masilia\Contracts\IbexaAi\Site\SiteLocations;
 use Masilia\Bundle\IbexaAiCraft\Mining\ConventionMiner;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -24,7 +24,7 @@ final class MineConventionsCommand extends Command
 {
     public function __construct(
         private readonly ConventionMiner $miner,
-        private readonly SiteaccessLocationResolver $resolver,
+        private readonly SiteLocations $resolver,
         private readonly PermissionResolver $permissions,
     ) {
         parent::__construct();
@@ -44,7 +44,7 @@ final class MineConventionsCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $this->permissions->setCurrentUserReference(new UserReference((int) $input->getOption('user')));
 
-        $root = $this->resolver->resolve((string) $input->getArgument('siteaccess'));
+        $root = $this->resolver->rootLocationId((string) $input->getArgument('siteaccess'));
         if ($root === null || $root <= 0) {
             $io->error('That siteaccess has no root location.');
 

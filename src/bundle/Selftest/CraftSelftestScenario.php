@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Masilia\Bundle\IbexaAiCraft\Selftest;
 
 use Ibexa\Contracts\Core\Repository\Repository;
-use Masilia\Bundle\IbexaAi\Os\Selftest\SelftestContext;
-use Masilia\Bundle\IbexaAi\Os\Selftest\SelftestScenario;
+use Masilia\Contracts\IbexaAi\Os\Selftest\SelftestContext;
+use Masilia\Contracts\IbexaAi\Os\Selftest\SelftestScenario;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
 use Throwable;
 

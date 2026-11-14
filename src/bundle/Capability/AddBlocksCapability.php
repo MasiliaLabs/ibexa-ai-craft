@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Masilia\Bundle\IbexaAiCraft\Capability;
 
 use Ibexa\Contracts\Core\Repository\Repository;
-use Masilia\Bundle\IbexaAi\Os\Capability\BaseCapability;
+use Masilia\Contracts\IbexaAi\Os\AbstractCapability;
 use Masilia\Bundle\IbexaAiCraft\Site\ItemsCreator;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
-use Masilia\IbexaAi\Os\CapabilityResult;
-use Masilia\IbexaAi\Os\Preview;
-use Masilia\IbexaAi\Os\Risk;
+use Masilia\Contracts\IbexaAi\Os\CapabilityResult;
+use Masilia\Contracts\IbexaAi\Os\Preview;
+use Masilia\Contracts\IbexaAi\Os\Risk;
 use Throwable;
 
-final class AddBlocksCapability extends BaseCapability
+final class AddBlocksCapability extends AbstractCapability
 {
     public function __construct(
         private readonly ItemsCreator $creator,

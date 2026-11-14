@@ -10,7 +10,7 @@ use Ibexa\Contracts\Core\Repository\Values\Content\Query\Criterion;
 use Ibexa\Contracts\Core\Repository\Values\Content\Query\Criterion\LogicalAnd;
 use Ibexa\Core\Repository\Values\Content\Content;
 use Masilia\Bundle\IbexaAi\Agent\Tool\AgentErrorHelper;
-use Masilia\Bundle\IbexaAi\Agent\Tool\SiteaccessLocationResolver;
+use Masilia\Contracts\IbexaAi\Site\SiteLocations;
 use Masilia\Bundle\IbexaAi\Agent\Tool\ToolInterface;
 use Masilia\Bundle\IbexaAi\Agent\Tool\ToolResult;
 use Masilia\Bundle\IbexaAi\Support\AiConstants;
@@ -20,7 +20,7 @@ readonly class BrowseSiteStructureTool implements ToolInterface
 {
     public function __construct(
         private Repository $repository,
-        private SiteaccessLocationResolver $locationResolver,
+        private SiteLocations $locationResolver,
         private LoggerInterface $aiLogger,
     ) {
     }
@@ -79,7 +79,7 @@ readonly class BrowseSiteStructureTool implements ToolInterface
 
             // 1. Resolve root location
             $explicitId = isset($params['location_id']) ? (int) $params['location_id'] : null;
-            $rootLocationId = $this->locationResolver->resolve($params['siteaccess'] ?? '', $explicitId);
+            $rootLocationId = $explicitId ?? $this->locationResolver->rootLocationId((string) ($params['siteaccess'] ?? ''));
             if ($rootLocationId === null) {
                 return ToolResult::error('Could not resolve root location. Provide a siteaccess name or location_id.');
             }

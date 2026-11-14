@@ -37,7 +37,7 @@ final class ItemsCreatorTest extends TestCase
         return new FakeContentType($identifier, ucfirst($identifier), new FieldDefinitionCollection($definitions));
     }
 
-    private function creator(ContentFactoryInterface $factory = null): ItemsCreator
+    private function creator(?ContentFactoryInterface $factory = null): ItemsCreator
     {
         $page = $this->type('page', ['blocks' => ['ibexa_object_relation_list', ['selectionContentTypes' => ['hero_banner', 'info_cards']]], 'title' => ['ibexa_string', []]]);
         $types = [

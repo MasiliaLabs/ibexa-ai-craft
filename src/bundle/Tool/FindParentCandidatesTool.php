@@ -10,7 +10,7 @@ use Ibexa\Contracts\Core\Repository\Values\Content\Query\Criterion\ContentTypeId
 use Ibexa\Contracts\Core\Repository\Values\Content\Query\Criterion\LogicalAnd;
 use Ibexa\Contracts\Core\Repository\Values\Content\Query\Criterion\Subtree;
 use Masilia\Bundle\IbexaAi\Agent\Tool\AgentErrorHelper;
-use Masilia\Bundle\IbexaAi\Agent\Tool\SiteaccessLocationResolver;
+use Masilia\Contracts\IbexaAi\Site\SiteLocations;
 use Masilia\Bundle\IbexaAi\Agent\Tool\ToolInterface;
 use Masilia\Bundle\IbexaAi\Agent\Tool\ToolResult;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
@@ -26,7 +26,7 @@ final readonly class FindParentCandidatesTool implements ToolInterface
 {
     public function __construct(
         private Repository $repository,
-        private SiteaccessLocationResolver $locationResolver,
+        private SiteLocations $locationResolver,
         private LoggerInterface $aiLogger,
         private Conventions $conventions = new Conventions(),
     ) {
@@ -88,7 +88,7 @@ final readonly class FindParentCandidatesTool implements ToolInterface
      */
     private function searchSiteaccess(string $siteaccess, string $contentTypeIdentifier, int $limit): array
     {
-        $rootLocationId = $this->locationResolver->resolve($siteaccess);
+        $rootLocationId = $this->locationResolver->rootLocationId($siteaccess);
         if ($rootLocationId === null) {
             return [];
         }

@@ -324,9 +324,8 @@ final class BlockCatalogTest extends TestCase
 
     private function makeCatalog(): BlockCatalog
     {
-        return new BlockCatalog(
-            $this->createMock(\Ibexa\Contracts\Core\Repository\ContentTypeService::class),
-            new NullAdapter(),
-        );
+        $types = $this->createMock(\Ibexa\Contracts\Core\Repository\ContentTypeService::class);
+
+        return new BlockCatalog($types, new NullAdapter(), new \Masilia\Bundle\IbexaAi\Agent\Block\ContentTypeSchemas($types));
     }
 }

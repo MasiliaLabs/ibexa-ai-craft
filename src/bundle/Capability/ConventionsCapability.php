@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Masilia\Bundle\IbexaAiCraft\Capability;
 
 use Ibexa\Contracts\Core\Repository\Repository;
-use Masilia\Bundle\IbexaAi\Agent\Tool\SiteaccessLocationResolver;
-use Masilia\Bundle\IbexaAi\Os\Capability\BaseCapability;
+use Masilia\Contracts\IbexaAi\Site\SiteLocations;
+use Masilia\Contracts\IbexaAi\Os\AbstractCapability;
 use Masilia\Bundle\IbexaAiCraft\Mining\ConventionMiner;
-use Masilia\IbexaAi\Os\CapabilityResult;
-use Masilia\IbexaAi\Os\Risk;
+use Masilia\Contracts\IbexaAi\Os\CapabilityResult;
+use Masilia\Contracts\IbexaAi\Os\Risk;
 use Throwable;
 
-final class ConventionsCapability extends BaseCapability
+final class ConventionsCapability extends AbstractCapability
 {
     public function __construct(
         private readonly ConventionMiner $miner,
-        private readonly SiteaccessLocationResolver $resolver,
+        private readonly SiteLocations $resolver,
         private readonly Repository $repository,
     ) {
     }
@@ -103,7 +103,7 @@ final class ConventionsCapability extends BaseCapability
                 return null;
             }
         }
-        $root = $this->resolver->resolve((string) $arguments['siteaccess']);
+        $root = $this->resolver->rootLocationId((string) $arguments['siteaccess']);
 
         return $root !== null && $root > 0 ? $root : null;
     }

@@ -85,6 +85,6 @@ trait ContentCatalogFactoryTrait
                 return [];
             });
 
-        return new ContentCatalog($contentTypeService, new ArrayAdapter());
+        return new ContentCatalog($contentTypeService, new ArrayAdapter(), new \Masilia\Bundle\IbexaAi\Agent\Block\ContentTypeSchemas($contentTypeService));
     }
 }

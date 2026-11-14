@@ -6,9 +6,9 @@ namespace Masilia\Bundle\IbexaAiCraft\Capability;
 
 use Masilia\Bundle\IbexaAi\Agent\Tool\ToolInterface;
 use Masilia\Bundle\IbexaAi\Os\Capability\BaseCapability;
-use Masilia\IbexaAi\Os\CapabilityResult;
-use Masilia\IbexaAi\Os\Preview;
-use Masilia\IbexaAi\Os\Risk;
+use Masilia\Contracts\IbexaAi\Os\CapabilityResult;
+use Masilia\Contracts\IbexaAi\Os\Preview;
+use Masilia\Contracts\IbexaAi\Os\Risk;
 
 final class CreateStructureCapability extends BaseCapability
 {

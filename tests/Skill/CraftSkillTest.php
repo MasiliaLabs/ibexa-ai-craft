@@ -6,7 +6,7 @@ namespace Masilia\IbexaAiCraft\Tests\Skill;
 
 use Masilia\Bundle\IbexaAiCraft\Skill\CraftSkill;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;
-use Masilia\IbexaAi\Os\Skill;
+use Masilia\Contracts\IbexaAi\Os\Skill;
 use PHPUnit\Framework\TestCase;
 
 final class CraftSkillTest extends TestCase
