@@ -43,7 +43,7 @@ Read `site.explore` and `site.conventions`, then put the whole page in ONE `prop
 1. `{id: "page", capability: "content.create", arguments: {content_type: "{$page}", parent_location_id: <a parent from site.explore>, siteaccess: "<the site>", fields: {title: "…", subtitle: "…", description: "…"}}}`
 2. `{capability: "site.add_blocks", arguments: {content_id: "\$page.content_id", items: [{type: "hero_banner", fields: {…}}, {type: "text_block", fields: {…}}, {type: "info_cards", fields: {…}, items: [{type: "card_item", fields: {…}}]}]}}`
 
-If any step fails nothing is kept. Never run `content.create` for a page on its own with `run_capability` and add the blocks afterwards: that makes the user approve twice, and leaves a page with no blocks if the second call fails. A page and its blocks are always ONE `propose_changes`. Create ALL the blocks of a page in one `site.add_blocks`, not one by one.
+If any step fails nothing is kept. Never run `content.create` for a page on its own and add the blocks afterwards: that makes the user approve twice, and leaves a page with no blocks if the second call fails. A page and its blocks are always ONE `propose_changes`. Create ALL the blocks of a page in one `site.add_blocks`, not one by one.
 
 ## Rules for blocks
 1. Use only the block types of `parentBlocksAllowedTypes` for the blocks of a page. Another type is refused.

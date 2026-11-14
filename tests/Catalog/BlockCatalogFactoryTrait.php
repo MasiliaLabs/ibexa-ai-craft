@@ -126,6 +126,6 @@ trait BlockCatalogFactoryTrait
             ->with($group)
             ->willReturn($contentTypes);
 
-        return new BlockCatalog($contentTypeService, new ArrayAdapter(), new \Masilia\Bundle\IbexaAi\Agent\Block\ContentTypeSchemas($contentTypeService));
+        return new BlockCatalog($contentTypeService, new ArrayAdapter(), new \Masilia\Bundle\IbexaAi\Ibexa\Schema\ContentTypeSchemas($contentTypeService));
     }
 }

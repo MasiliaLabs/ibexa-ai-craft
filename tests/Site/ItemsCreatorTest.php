@@ -11,7 +11,7 @@ use Ibexa\Contracts\Core\Repository\Repository;
 use Ibexa\Contracts\Core\Repository\Values\Content\Language;
 use Ibexa\Contracts\Core\Repository\Values\Content\ContentInfo;
 use Ibexa\Core\Repository\Values\ContentType\FieldDefinitionCollection;
-use Masilia\Bundle\IbexaAi\Content\EnabledLanguages;
+use Masilia\Bundle\IbexaAi\Ibexa\Content\EnabledLanguages;
 use Masilia\Contracts\IbexaAi\Content\ContentWriter;
 use Masilia\Bundle\IbexaAiCraft\Site\ItemsCreator;
 use Masilia\Bundle\IbexaAiCraft\Support\Conventions;

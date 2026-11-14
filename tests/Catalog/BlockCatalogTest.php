@@ -326,6 +326,6 @@ final class BlockCatalogTest extends TestCase
     {
         $types = $this->createMock(\Ibexa\Contracts\Core\Repository\ContentTypeService::class);
 
-        return new BlockCatalog($types, new NullAdapter(), new \Masilia\Bundle\IbexaAi\Agent\Block\ContentTypeSchemas($types));
+        return new BlockCatalog($types, new NullAdapter(), new \Masilia\Bundle\IbexaAi\Ibexa\Schema\ContentTypeSchemas($types));
     }
 }
