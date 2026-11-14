@@ -16,7 +16,7 @@ use Psr\Cache\CacheItemPoolInterface;
  * from the non-"Blocks" content type groups.
  *
  * Complements BlockCatalog which only covers block layout types.
- * Used by PlanBuilder to validate required fields for any content type
+ * The content model of the site: the schema of each content type, as the assistant reads it (ContentTypeSchemas).
  * the LLM might propose in a plan.
  */
 final class ContentCatalog
