@@ -25,6 +25,6 @@ final class SharedConventionsPass implements CompilerPassInterface
 
         $shared = (array) $container->getParameter(self::SHARED);
         $own = $container->hasParameter(self::OWN) ? (array) $container->getParameter(self::OWN) : [];
-        $container->setParameter(self::OWN, array_replace($own, array_intersect_key($shared, array_flip(['page_type', 'blocks_field', 'items_field', 'block_group', 'content_groups']))));
+        $container->setParameter(self::OWN, array_replace($own, array_intersect_key($shared, array_flip(['page_type', 'blocks_field', 'items_field', 'items_field_by_type', 'block_group', 'content_groups']))));
     }
 }

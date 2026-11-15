@@ -126,7 +126,7 @@ final readonly class ItemsCreator
                 if ($depth >= self::MAX_DEPTH) {
                     return sprintf('Items can be nested %d levels deep at most.', self::MAX_DEPTH);
                 }
-                $problem = $this->itemsProblem($itemType, $this->conventions->itemsField, (array) $item['items'], $depth + 1);
+                $problem = $this->itemsProblem($itemType, $this->conventions->itemsFieldFor($type), (array) $item['items'], $depth + 1);
                 if ($problem !== null) {
                     return sprintf('Item %d ("%s"): %s', $index + 1, $type, $problem);
                 }
@@ -156,7 +156,7 @@ final readonly class ItemsCreator
             $itemId = (int) $this->writer->create($type, [$folder], (array) ($item['fields'] ?? []), $lang)->content->getId();
             $ids[] = $itemId;
             if (isset($item['items'])) {
-                $children[$itemId] = $this->createUnder($itemId, $this->conventions->itemsField, (array) $item['items'], $lang, $children);
+                $children[$itemId] = $this->createUnder($itemId, $this->conventions->itemsFieldFor($type), (array) $item['items'], $lang, $children);
             }
         }
 

@@ -16,6 +16,7 @@ final readonly class Conventions
      * @param string       $pageType      The content type of a page
      * @param string       $blocksField   The field of a page that holds its blocks (a list of relations)
      * @param string       $itemsField    The field of a block that holds its child items, when it has some
+     * @param array<string, string> $itemsFieldByType The field that holds the child items of the block types that do not call it $itemsField ("info_cards" => "cards")
      * @param string       $siteType      The content type of the container of a site (its title, domain, description, favicon)
      * @param string       $homePageType  The content type of the home page of a site (a page of blocks)
      * @param string       $layoutType    The content type of the layout configuration of a site (its back-office title)
@@ -31,7 +32,14 @@ final readonly class Conventions
         public string $homePageType = 'home_page',
         public string $layoutType = 'layout_config',
         public string $folderType = 'folder',
+        public array $itemsFieldByType = [],
     ) {
+    }
+
+    /** The field that holds the child items of a block of this type */
+    public function itemsFieldFor(string $blockType): string
+    {
+        return $this->itemsFieldByType[$blockType] ?? $this->itemsField;
     }
 
     /**
@@ -51,6 +59,7 @@ final readonly class Conventions
             homePageType: (string) ($settings['home_page_type'] ?? $defaults->homePageType),
             layoutType: (string) ($settings['layout_type'] ?? $defaults->layoutType),
             folderType: (string) ($settings['folder_type'] ?? $defaults->folderType),
+            itemsFieldByType: array_map('strval', (array) ($settings['items_field_by_type'] ?? $defaults->itemsFieldByType)),
         );
     }
 }

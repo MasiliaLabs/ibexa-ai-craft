@@ -14,11 +14,11 @@ final class SharedConventionsPassTest extends TestCase
     {
         $container = new ContainerBuilder();
         $container->setParameter('ibexa_ai_craft.conventions', ['page_type' => 'page', 'blocks_field' => 'blocks']);
-        $container->setParameter('masilia_blocks.conventions', ['page_type' => 'landing', 'blocks_field' => 'sections', 'items_field' => 'cards', 'unknown' => 'x']);
+        $container->setParameter('masilia_blocks.conventions', ['page_type' => 'landing', 'blocks_field' => 'sections', 'items_field' => 'cards', 'items_field_by_type' => ['info_cards' => 'cards'], 'unknown' => 'x']);
 
         (new SharedConventionsPass())->process($container);
 
-        self::assertSame(['page_type' => 'landing', 'blocks_field' => 'sections', 'items_field' => 'cards'], $container->getParameter('ibexa_ai_craft.conventions'));
+        self::assertSame(['page_type' => 'landing', 'blocks_field' => 'sections', 'items_field' => 'cards', 'items_field_by_type' => ['info_cards' => 'cards']], $container->getParameter('ibexa_ai_craft.conventions'));
     }
 
     public function testWithoutTheFrontOfficePackageTheOwnSettingsStand(): void

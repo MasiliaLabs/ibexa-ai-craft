@@ -38,13 +38,13 @@ final class ItemsCreatorTest extends TestCase
         return new FakeContentType($identifier, ucfirst($identifier), new FieldDefinitionCollection($definitions));
     }
 
-    private function creator(?ContentWriter $writer = null): ItemsCreator
+    private function creator(?ContentWriter $writer = null, string $infoField = 'items', Conventions $conventions = new Conventions()): ItemsCreator
     {
         $page = $this->type('page', ['blocks' => ['ibexa_object_relation_list', ['selectionContentTypes' => ['hero_banner', 'info_cards']]], 'title' => ['ibexa_string', []]]);
         $types = [
             'page' => $page,
             'hero_banner' => $this->type('hero_banner', ['title' => ['ibexa_string', []]]),
-            'info_cards' => $this->type('info_cards', ['items' => ['ibexa_object_relation_list', ['selectionContentTypes' => ['card_item']]]]),
+            'info_cards' => $this->type('info_cards', [$infoField => ['ibexa_object_relation_list', ['selectionContentTypes' => ['card_item']]]]),
             'card_item' => $this->type('card_item', ['title' => ['ibexa_string', []]]),
         ];
 
@@ -66,7 +66,15 @@ final class ItemsCreatorTest extends TestCase
         $repository->method('commit')->willReturnCallback(function (): void { ++$this->commits; });
         $repository->method('rollback')->willReturnCallback(function (): void { ++$this->rollbacks; });
 
-        return new ItemsCreator($repository, $writer ?? $this->createMock(ContentWriter::class), new EnabledLanguages($languages), new Conventions());
+        return new ItemsCreator($repository, $writer ?? $this->createMock(ContentWriter::class), new EnabledLanguages($languages), $conventions);
+    }
+
+    public function testABlockTypeThatKeepsItsChildrenInAnotherFieldIsFilledThroughIt(): void
+    {
+        $items = [['type' => 'info_cards', 'items' => [['type' => 'card_item', 'fields' => ['title' => 'x']]]]];
+
+        self::assertStringContainsString('has no list-of-relations field "items" (it has: cards)', (string) $this->creator(null, 'cards')->problem(100, 'blocks', $items), 'by the convention alone, a block whose list is "cards" is refused');
+        self::assertNull($this->creator(null, 'cards', new Conventions(itemsFieldByType: ['info_cards' => 'cards']))->problem(100, 'blocks', $items));
     }
 
     public function testAValidRequestHasNoProblem(): void

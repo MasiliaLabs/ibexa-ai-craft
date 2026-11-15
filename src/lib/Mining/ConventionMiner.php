@@ -81,7 +81,7 @@ final readonly class ConventionMiner
                     $filled[$definition->identifier] = $value !== null && !$fieldTypes->getFieldType($definition->fieldTypeIdentifier)->isEmptyValue($value);
                 }
                 $entry = ['type' => $type->identifier, 'filled' => $filled];
-                $itemsValue = $block->getFieldValue($this->conventions->itemsField);
+                $itemsValue = $block->getFieldValue($this->conventions->itemsFieldFor($type->identifier));
                 if ($itemsValue !== null && isset($itemsValue->destinationContentIds)) {
                     $entry['children'] = count((array) $itemsValue->destinationContentIds);
                 }
