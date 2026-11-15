@@ -49,6 +49,11 @@ final class SiteConfigCapabilitiesTest extends TestCase
                 return $this->sites[$identifier] ?? null;
             }
 
+            public function check(Site $site, bool $isNew): array
+            {
+                return array_map(static fn (string $m): \Masilia\Contracts\IbexaSites\Problem => new \Masilia\Contracts\IbexaSites\Problem('site', $m), $this->problems($site, $isNew));
+            }
+
             public function problems(Site $site, bool $isNew): array
             {
                 $problems = [];
