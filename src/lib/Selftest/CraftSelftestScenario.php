@@ -7,6 +7,7 @@ namespace Masilia\IbexaAiCraft\Selftest;
 use Ibexa\Contracts\Core\Repository\Repository;
 use Masilia\Contracts\IbexaAi\Os\Selftest\SelftestContext;
 use Masilia\Contracts\IbexaAi\Os\Selftest\SelftestScenario;
+use Masilia\Contracts\IbexaSites\SiteRegistry;
 use Masilia\IbexaAiCraft\Support\Conventions;
 use Throwable;
 
@@ -15,11 +16,15 @@ use Throwable;
  * what must be refused is: a type the page does not take, an unknown language, a field that is not a list.
  * It deletes the page (and with it its blocks) at the end.
  */
-final readonly class CraftSelftestScenario implements SelftestScenario
+final class CraftSelftestScenario implements SelftestScenario
 {
+    /** The configuration made in the registry by the run: deleted at the end, whatever happened. */
+    private ?string $configured = null;
+
     public function __construct(
-        private Repository $repository,
-        private Conventions $conventions,
+        private readonly Repository $repository,
+        private readonly Conventions $conventions,
+        private readonly SiteRegistry $registry,
     ) {
     }
 
@@ -105,6 +110,7 @@ final readonly class CraftSelftestScenario implements SelftestScenario
 
             return ($location['parent_location_id'] ?? 0) === $projects && str_contains((string) ($location['path'] ?? ''), '/' . $home . '/') ? null : 'the page "One" is not under "Projects" under the home page';
         });
+        $this->configure($context, $built);
         $context->step('a site in an unknown language is refused', 'site.create_structure', ['language' => 'xx'] + $site, null, null, true);
         $context->step('a page with no title is refused', 'site.create_structure', ['pages' => [['title' => '']]] + $site, null, null, true);
 
@@ -117,9 +123,51 @@ final readonly class CraftSelftestScenario implements SelftestScenario
         $context->step('an empty list of blocks is refused', 'site.add_blocks', ['content_id' => $pageId, 'items' => []], null, null, true);
     }
 
+    /**
+     * The configuration of the site just built: described, made as a draft, listed, changed, refused when it clashes, deleted.
+     *
+     * @param array<string, mixed> $built The answer of site.create_structure
+     */
+    private function configure(SelftestContext $context, array $built): void
+    {
+        $identifier = 'st_' . substr((string) preg_replace('/[^a-z0-9]/', '', strtolower($context->stamp)), 0, 20);
+        $host = 'selftest-' . strtolower((string) preg_replace('/[^a-z0-9]/i', '', $context->stamp)) . '.test';
+        $context->step('the options of a site are given', 'site.config.describe', [], static fn (array $d): ?string => ($d['options']['languages'] ?? []) !== [] && ($d['options']['designs'] ?? []) !== [] ? null : 'no language or no design', 'options');
+        $options = $context->answer('options')['options'] ?? [];
+        $language = (string) ($options['languages'][0] ?? '');
+        $design = (string) ($options['designs'][0] ?? '');
+        if ($language === '' || $design === '') {
+            return;
+        }
+        $site = [
+            'identifier' => $identifier,
+            'name' => 'Selftest ' . $context->stamp,
+            'root_location_id' => (int) ($built['home_page_location_id'] ?? 0),
+            'layout_id' => (int) ($built['layout_id'] ?? 0),
+            'design' => $design,
+            'siteaccesses' => [['name' => $identifier . '_a', 'languages' => [$language], 'host' => $host]],
+        ];
+        $context->step('a design that does not exist is refused for a site', 'site.config.create', ['design' => 'no_such_design'] + $site, null, null, true);
+        $context->step('a host that is not a host is refused', 'site.config.create', ['siteaccesses' => [['name' => $identifier . '_a', 'languages' => [$language], 'host' => 'Not A Host']]] + $site, null, null, true);
+        $context->step('a layout that is not a content is refused', 'site.config.create', ['layout_id' => 999999999] + $site, null, null, true);
+        $this->configured = $identifier;
+        $context->step('configure the site as a draft', 'site.config.create', $site, static fn (array $d): ?string => ($d['site']['status'] ?? '') === 'draft' && ($d['site']['layout_remote_id'] ?? '') !== '' ? null : 'not a draft, or no layout', 'configured');
+        $context->step('the registry lists it', 'site.config.list', [], static fn (array $d): ?string => in_array($identifier, array_column($d['sites'] ?? [], 'identifier'), true) ? null : 'not listed');
+        $context->step('it is described as it was made', 'site.config.describe', ['identifier' => $identifier], static fn (array $d): ?string => ($d['site']['siteaccesses'][0]['host'] ?? '') === $host ? null : 'the host is not the one given');
+        $context->step('a second site on the same address is refused', 'site.config.create', ['identifier' => $identifier . 'x', 'root_location_id' => (int) ($built['site_location_id'] ?? 0)] + $site, null, null, true);
+        $context->step('a change keeps what is not given', 'site.config.update', ['identifier' => $identifier, 'name' => 'Renamed ' . $context->stamp], static fn (array $d): ?string => ($d['site']['name'] ?? '') === 'Renamed ' . $context->stamp && ($d['site']['design'] ?? '') === $design ? null : 'the name did not change, or the design was lost');
+        $context->step('a draft cannot be the default siteaccess', 'site.config.default_siteaccess', ['siteaccess' => $identifier . '_a'], null, null, true);
+        $context->step('its configuration is deleted', 'site.config.delete', ['identifier' => $identifier], static fn (array $d): ?string => ($d['identifier'] ?? '') === $identifier ? null : 'not deleted');
+        $this->configured = null;
+    }
+
     public function cleanup(): void
     {
-        // The page is a tracked content: the selftest deletes it, and with it its blocks.
+        // The page is a tracked content: the selftest deletes it, and with it its blocks. A site configuration left by a failed run goes too.
+        if ($this->configured !== null && $this->registry->find($this->configured) !== null) {
+            $this->registry->delete($this->configured);
+        }
+        $this->configured = null;
     }
 
     /**

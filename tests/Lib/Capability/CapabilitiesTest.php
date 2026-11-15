@@ -6,7 +6,18 @@ namespace Masilia\IbexaAiCraft\Tests\Lib\Capability;
 
 use Ibexa\Contracts\Core\Repository\ContentTypeService;
 use Ibexa\Contracts\Core\Repository\Repository;
+use Masilia\Contracts\IbexaSites\SiteOptions;
+use Masilia\Contracts\IbexaSites\SiteRegistry;
+use Masilia\Contracts\IbexaSites\SiteSettings;
 use Masilia\IbexaAiCraft\Capability\ItemTypesCapability;
+use Masilia\IbexaAiCraft\Capability\SiteConfigCreateCapability;
+use Masilia\IbexaAiCraft\Capability\SiteConfigDefaultSiteaccessCapability;
+use Masilia\IbexaAiCraft\Capability\SiteConfigDeleteCapability;
+use Masilia\IbexaAiCraft\Capability\SiteConfigDescribeCapability;
+use Masilia\IbexaAiCraft\Capability\SiteConfigListCapability;
+use Masilia\IbexaAiCraft\Capability\SiteConfigSetStatusCapability;
+use Masilia\IbexaAiCraft\Capability\SiteConfigUpdateCapability;
+use Masilia\IbexaAiCraft\Site\SiteConfigs;
 use Masilia\IbexaAiCraft\Capability\ListPreviewCapability;
 use Masilia\IbexaAiCraft\Capability\NewsletterSubscribersCapability;
 use Masilia\IbexaAiCraft\Capability\PageBlockMoveCapability;
@@ -53,6 +64,9 @@ final class CapabilitiesTest extends TestCase
         $conventions = new Conventions();
         $creator = new ItemsCreator($repository, $test->createMock(ContentWriter::class), $test->createMock(Languages::class), $conventions);
         $pages = new PageBlocks($repository, $conventions);
+        $registry = $test->createMock(SiteRegistry::class);
+        $settings = $test->createMock(SiteSettings::class);
+        $configs = new SiteConfigs($registry, $repository);
         $builder = (new \ReflectionClass(SiteBuilder::class))->newInstanceWithoutConstructor();
         $explorer = (new \ReflectionClass(SiteExplorer::class))->newInstanceWithoutConstructor();
 
@@ -69,6 +83,13 @@ final class CapabilitiesTest extends TestCase
             new ThemeCreateCapability($test->createMock(Themes::class)),
             new ListPreviewCapability($test->createMock(ListPreview::class)),
             new NewsletterSubscribersCapability(),
+            new SiteConfigListCapability($registry, $settings, $configs),
+            new SiteConfigDescribeCapability($registry, $settings, $test->createMock(SiteOptions::class), $configs),
+            new SiteConfigCreateCapability($registry, $configs),
+            new SiteConfigUpdateCapability($registry, $configs),
+            new SiteConfigSetStatusCapability($registry, $configs),
+            new SiteConfigDeleteCapability($registry, $configs),
+            new SiteConfigDefaultSiteaccessCapability($settings),
             new ItemTypesCapability($test->createMock(ShownViews::class), $test->createMock(ContentTypeService::class), $test->createMock(ContentTypeSchemas::class), $conventions),
         ] as $capability) {
             yield $capability->name() => [$capability];
@@ -93,7 +114,7 @@ final class CapabilitiesTest extends TestCase
     public function testWhatChangesSomethingNamesItsPoliciesAndPreviewsItself(Capability $capability): void
     {
         if ($capability->risk() === Risk::READ) {
-            self::assertContains($capability->requires(), [[['content', 'read']], [['setup', 'administrate']]]);
+            self::assertContains($capability->requires(), [[['content', 'read']], [['setup', 'administrate']], [['masilia_site', 'view']]]);
 
             return;
         }
