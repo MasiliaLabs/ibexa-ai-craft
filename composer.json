@@ -1,8 +1,30 @@
 {
     "name": "masilia/ibexa-ai-craft",
     "description": "How Masilia sites are built, for the Ibexa AI OS: pages made of blocks, site structures, and the conventions that go with them",
+    "keywords": [
+        "ibexa",
+        "ibexa-dxp",
+        "ibexa-5",
+        "symfony-bundle",
+        "ai",
+        "page-builder",
+        "blocks",
+        "site-builder"
+    ],
+    "homepage": "https://github.com/MasiliaLabs/ibexa-ai-craft",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "MasiliaLabs",
+            "homepage": "https://github.com/MasiliaLabs"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/MasiliaLabs/ibexa-ai-craft/issues",
+        "source": "https://github.com/MasiliaLabs/ibexa-ai-craft",
+        "security": "https://github.com/MasiliaLabs/ibexa-ai-craft/security/policy"
+    },
     "type": "ibexa-bundle",
-    "license": "proprietary",
     "require": {
         "php": ">=8.3",
         "ibexa/core": "^5.0",
