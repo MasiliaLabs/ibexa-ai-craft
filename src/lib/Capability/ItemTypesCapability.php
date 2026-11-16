@@ -55,7 +55,7 @@ final class ItemTypesCapability extends AbstractCapability
 
     public function examples(): array
     {
-        return [['description' => 'What the site can list as cards', 'arguments' => ['siteaccess' => 'fossil_exit']]];
+        return [['description' => 'What the site can list as cards', 'arguments' => ['siteaccess' => 'acme']]];
     }
 
     public function execute(array $arguments): CapabilityResult

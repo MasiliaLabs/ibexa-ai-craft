@@ -63,7 +63,7 @@ final class ConventionsCapability extends AbstractCapability
 
     public function examples(): array
     {
-        return [['description' => 'How pages are built on a site', 'arguments' => ['siteaccess' => 'fossil_exit']]];
+        return [['description' => 'How pages are built on a site', 'arguments' => ['siteaccess' => 'acme']]];
     }
 
     public function validate(array $arguments): ?string

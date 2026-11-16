@@ -70,9 +70,9 @@ final class SiteExplorerTest extends TestCase
 
     public function testWithoutAMatchOnlyTheSiteaccessesAreListed(): void
     {
-        $result = $this->explorer(['admin', 'mattcch'])->explore('unknown_site');
+        $result = $this->explorer(['admin', 'partner'])->explore('unknown_site');
 
-        self::assertSame(['admin', 'mattcch'], $result->siteaccesses);
+        self::assertSame(['admin', 'partner'], $result->siteaccesses);
         self::assertNull($result->matchedSiteaccess);
         self::assertNull($result->rootLocationId);
         self::assertSame([], $result->siteStructure);
@@ -82,19 +82,19 @@ final class SiteExplorerTest extends TestCase
 
     public function testTheSiteIsMatchedLoosely(): void
     {
-        self::assertSame('fossilexit', $this->explorer(['fossilexit', 'mattcch'])->explore('fossil exit')->matchedSiteaccess);
-        self::assertSame('mattcch_test', $this->explorer(['mattcch_test'])->explore('mattcch-test')->matchedSiteaccess);
-        self::assertSame('admin', $this->explorer(['admin', 'admin_fossil_exit'])->explore('admin')->matchedSiteaccess, 'an exact name wins');
+        self::assertSame('acmeshop', $this->explorer(['acmeshop', 'partner'])->explore('acme shop')->matchedSiteaccess);
+        self::assertSame('partner_test', $this->explorer(['partner_test'])->explore('partner-test')->matchedSiteaccess);
+        self::assertSame('admin', $this->explorer(['admin', 'admin_acme'])->explore('admin')->matchedSiteaccess, 'an exact name wins');
     }
 
     public function testAMatchedSiteGivesItsRootTreeParentsAndBlocks(): void
     {
-        $result = $this->explorer(['fossilexit'], $this->pageCatalog())->explore('fossilexit');
+        $result = $this->explorer(['acmeshop'], $this->pageCatalog())->explore('acmeshop');
 
         self::assertSame(42, $result->rootLocationId);
-        self::assertSame('fossilexit', $result->siteStructure['siteaccess']);
+        self::assertSame('acmeshop', $result->siteStructure['siteaccess']);
         self::assertSame('About', $result->siteStructure['children'][0]['name']);
-        self::assertSame([['location_id' => 50, 'name' => 'About', 'content_type' => 'page', 'siteaccess' => 'fossilexit']], $result->parentCandidates);
+        self::assertSame([['location_id' => 50, 'name' => 'About', 'content_type' => 'page', 'siteaccess' => 'acmeshop']], $result->parentCandidates);
         self::assertSame(['hero_banner', 'info_cards', 'orphan'], array_keys($result->blockTypes));
         self::assertSame(['hero_banner', 'info_cards', 'orphan'], $result->parentBlocksAllowedTypes);
         self::assertSame([['tree', 42], ['parents:page', 42]], $this->asked, 'the pages are the conventions\' page type');
@@ -112,7 +112,7 @@ final class SiteExplorerTest extends TestCase
 
     public function testATreeThatCannotBeReadLeavesTheRestOfTheAnswer(): void
     {
-        $result = $this->explorer(['fossilexit'], $this->pageCatalog(), null, true)->explore('fossilexit');
+        $result = $this->explorer(['acmeshop'], $this->pageCatalog(), null, true)->explore('acmeshop');
 
         self::assertFalse($result->hasError());
         self::assertSame([], $result->siteStructure);
@@ -122,10 +122,10 @@ final class SiteExplorerTest extends TestCase
 
     public function testTheBlocksAPageAcceptsComeFromTheCatalogWhenThereIsOne(): void
     {
-        self::assertSame([], $this->explorer(['fossilexit'])->explore('fossilexit')->parentBlocksAllowedTypes, 'no catalog');
+        self::assertSame([], $this->explorer(['acmeshop'])->explore('acmeshop')->parentBlocksAllowedTypes, 'no catalog');
 
         $articles = $this->createContentCatalog(['Content' => ['article' => ['name' => 'Article', 'fields' => ['title' => 'ibexa_string']]]]);
-        self::assertSame([], $this->explorer(['fossilexit'], $articles)->explore('fossilexit')->parentBlocksAllowedTypes, 'no page type');
+        self::assertSame([], $this->explorer(['acmeshop'], $articles)->explore('acmeshop')->parentBlocksAllowedTypes, 'no page type');
     }
 
     public function testBlocksTheThemeOfTheSiteHasNoTemplateForAreNotOffered(): void
@@ -141,9 +141,9 @@ final class SiteExplorerTest extends TestCase
             }
         };
 
-        $result = $this->explorer(['fossilexit'], $this->pageCatalog(), $shown)->explore('fossilexit');
+        $result = $this->explorer(['acmeshop'], $this->pageCatalog(), $shown)->explore('acmeshop');
 
-        self::assertSame('fossilexit', $shown->asked);
+        self::assertSame('acmeshop', $shown->asked);
         self::assertSame(['hero_banner', 'info_cards'], array_column($result->blockTypes, 'identifier'));
         self::assertSame(['hero_banner', 'info_cards'], $result->parentBlocksAllowedTypes);
         self::assertSame(['orphan'], $result->notShownBlockTypes);

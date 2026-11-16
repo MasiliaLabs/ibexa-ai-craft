@@ -143,13 +143,13 @@ final class PageAndSiteCapabilitiesTest extends TestCase
     public function testADesignThatDoesNotExistIsRefusedBeforeItIsChecked(): void
     {
         $themes = $this->createMock(Themes::class);
-        $themes->method('designs')->willReturn(['fossil_exit' => ['fossil_exit', 'standard']]);
+        $themes->method('designs')->willReturn(['acme' => ['acme', 'standard']]);
         $themes->method('check')->willReturn([['level' => 'error', 'theme' => null, 'message' => 'x'], ['level' => 'notice', 'theme' => 'standard', 'message' => 'y']]);
         $check = new ThemeCheckCapability($themes);
 
         self::assertStringContainsString('no design "nope"', (string) $check->validate(['design' => 'nope']));
-        self::assertNull($check->validate(['design' => 'fossil_exit']));
-        self::assertSame('1 error(s), 1 notice(s).', $check->execute(['design' => 'fossil_exit'])->message);
+        self::assertNull($check->validate(['design' => 'acme']));
+        self::assertSame('1 error(s), 1 notice(s).', $check->execute(['design' => 'acme'])->message);
     }
 
     public function testTheNewsletterIsReadOnlyWhenItIsTurnedOnAndAsPersonalData(): void

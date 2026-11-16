@@ -42,8 +42,8 @@ final class CreateStructureCapability extends AbstractCapability
             'type' => 'object',
             'required' => ['site_name', 'domain', 'pages'],
             'properties' => [
-                'site_name' => ['type' => 'string', 'minLength' => 1, 'description' => 'Site name, e.g. "Fossil Exit"'],
-                'domain' => ['type' => 'string', 'minLength' => 1, 'description' => 'Domain, e.g. "fossilexit.org"'],
+                'site_name' => ['type' => 'string', 'minLength' => 1, 'description' => 'Site name, e.g. "Acme Shop"'],
+                'domain' => ['type' => 'string', 'minLength' => 1, 'description' => 'Domain, e.g. "example.org"'],
                 'description' => ['type' => 'string'],
                 'pages' => ['type' => 'array', 'description' => 'The pages below the home page', 'items' => $page],
                 'language' => ['type' => 'string', 'description' => 'Language code the content is written in, e.g. "fre-FR" or "fr" (default: the default language of the repository)'],

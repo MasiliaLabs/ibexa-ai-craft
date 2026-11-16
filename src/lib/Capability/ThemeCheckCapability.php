@@ -47,7 +47,7 @@ final class ThemeCheckCapability extends AbstractCapability
 
     public function examples(): array
     {
-        return [['description' => 'Check the design of a site', 'arguments' => ['design' => 'fossil_exit']]];
+        return [['description' => 'Check the design of a site', 'arguments' => ['design' => 'acme']]];
     }
 
     public function validate(array $arguments): ?string

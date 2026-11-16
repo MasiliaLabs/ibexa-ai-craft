@@ -15,8 +15,8 @@ use Throwable;
 
 /**
  * What the assistant needs to know of a front-office site before it builds pages there, in one answer: the siteaccesses
- * (the editor works in the admin, which is a siteaccess of its own), the one the user means (matched loosely: "fossil
- * exit" is "fossilexit"), its root, its tree, where a page can go, and the blocks a page takes.
+ * (the editor works in the admin, which is a siteaccess of its own), the one the user means (matched loosely: "acme
+ * exit" is "acmeshop"), its root, its tree, where a page can go, and the blocks a page takes.
  */
 final readonly class SiteExplorer
 {
@@ -121,7 +121,7 @@ final readonly class SiteExplorer
             }
         }
 
-        // Substring containment — handles "fossil exit" → "fossilexit"
+        // Substring containment — handles "acme shop" → "acmeshop"
         foreach ($siteaccesses as $name) {
             if ($needle !== '' && str_contains($this->normalize($name), $needle)) {
                 return $name;

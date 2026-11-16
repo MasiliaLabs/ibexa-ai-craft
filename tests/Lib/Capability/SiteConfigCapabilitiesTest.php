@@ -138,7 +138,7 @@ final class SiteConfigCapabilitiesTest extends TestCase
             'name' => 'Demo',
             'root_location_id' => 500,
             'layout_id' => 77,
-            'design' => 'imal',
+            'design' => 'brand',
             'siteaccesses' => [
                 ['name' => 'demo', 'languages' => ['eng-GB'], 'host' => 'Demo.Example.org'],
                 ['name' => 'demo_fr', 'languages' => ['fre-FR', 'eng-GB'], 'host' => 'demo.example.org', 'prefix' => '/fr'],
@@ -206,7 +206,7 @@ final class SiteConfigCapabilitiesTest extends TestCase
         self::assertNull($site['var_dir'], 'an empty string clears it');
         self::assertSame('main_group', $site['base'], 'what is not given stays');
         self::assertCount(2, $site['siteaccesses']);
-        self::assertSame('imal', $site['design']);
+        self::assertSame('brand', $site['design']);
         self::assertStringContainsString('No site "ghost"', (string) $update->validate(['identifier' => 'ghost']));
     }
 
@@ -271,7 +271,7 @@ final class SiteConfigCapabilitiesTest extends TestCase
     {
         $options = $this->createMock(SiteOptions::class);
         $options->method('languages')->willReturn(['eng-GB', 'fre-FR']);
-        $options->method('designs')->willReturn(['imal']);
+        $options->method('designs')->willReturn(['brand']);
         $options->method('baseGroups')->willReturn(['main_group']);
         $options->method('adminSiteaccesses')->willReturn(['admin']);
 

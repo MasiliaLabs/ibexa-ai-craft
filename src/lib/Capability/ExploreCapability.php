@@ -50,7 +50,7 @@ final class ExploreCapability extends AbstractCapability
 
     public function examples(): array
     {
-        return [['description' => 'The site the user named', 'arguments' => ['siteaccess' => 'fossil_exit']], ['description' => 'Which sites are there', 'arguments' => []]];
+        return [['description' => 'The site the user named', 'arguments' => ['siteaccess' => 'acme']], ['description' => 'Which sites are there', 'arguments' => []]];
     }
 
     public function execute(array $arguments): CapabilityResult
