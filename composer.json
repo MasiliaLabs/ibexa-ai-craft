@@ -56,15 +56,15 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github.com:masilia/ibexa-ai.git"
+            "url": "git@github.com:MasiliaLabs/ibexa-ai.git"
         },
         {
             "type": "vcs",
-            "url": "git@github.com:masilia/ibexa-blocks.git"
+            "url": "git@github.com:MasiliaLabs/ibexa-blocks.git"
         },
         {
             "type": "vcs",
-            "url": "git@github.com:masilia/ibexa-sites.git"
+            "url": "git@github.com:MasiliaLabs/ibexa-sites.git"
         }
     ],
     "scripts": {
