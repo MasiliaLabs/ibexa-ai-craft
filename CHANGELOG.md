@@ -4,6 +4,8 @@ All notable changes to `masilia/ibexa-ai-craft` are documented here. The format 
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-17
+
 ### Added
 - `items_field_by_type`: the field that holds the child items of the block types that do not call it `items` (for example `info_cards: cards`); blocks and the assistant read it.
 
@@ -37,7 +39,8 @@ First release: how Masilia sites are built, for the Ibexa AI OS.
 - `site.conventions`: how the pages of a site are built, mined from the pages themselves.
 - A self-test scenario for the page-of-blocks flow.
 
-[Unreleased]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.1.0...HEAD
+[Unreleased]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.0...HEAD
+[2.2.0]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.1.0...2.2.0
 [2.1.0]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/1.0.0...2.0.0
 [1.0.0]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/0.1.0...1.0.0
