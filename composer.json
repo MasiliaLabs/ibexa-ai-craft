@@ -53,24 +53,6 @@
             "Masilia\\IbexaAiCraft\\Tests\\": "tests/"
         }
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/MasiliaLabs/ibexa-ai.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/MasiliaLabs/ibexa-blocks.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/MasiliaLabs/ibexa-sites.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/MasiliaLabs/ibexa-admin-kit.git"
-        }
-    ],
     "scripts": {
         "phpunit": "phpunit",
         "phpstan": "phpstan analyse --memory-limit=1G",
