@@ -118,6 +118,7 @@ vendor/bin/phpstan analyse --memory-limit=2G --no-progress
 ## Support, contributing and security
 
 - Questions and bug reports: [GitHub issues](https://github.com/MasiliaLabs/ibexa-ai-craft/issues)
+- Upgrading across a breaking change: [UPGRADE.md](UPGRADE.md)
 - Pull requests are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md)
 - Security problems: please follow [SECURITY.md](SECURITY.md) and do not open a public issue
 
