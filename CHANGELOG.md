@@ -4,6 +4,8 @@ All notable changes to `masilia/ibexa-ai-craft` are documented here. The format 
 
 ## [Unreleased]
 
+## [2.2.3] - 2026-11-19
+
 ### Added
 - Docs: a *With Symfony Flex* section in the README and in the skill: the Masilia recipes (`MasiliaLabs/recipes`) enable the bundle and write its route and config files on `composer require`.
 
@@ -52,7 +54,8 @@ First release: how Masilia sites are built, for the Ibexa AI OS.
 - `site.conventions`: how the pages of a site are built, mined from the pages themselves.
 - A self-test scenario for the page-of-blocks flow.
 
-[Unreleased]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.2...HEAD
+[Unreleased]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.3...HEAD
+[2.2.3]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.2...2.2.3
 [2.2.2]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.1...2.2.2
 [2.2.1]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.0...2.2.1
 [2.2.0]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.1.0...2.2.0
