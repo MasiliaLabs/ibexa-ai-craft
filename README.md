@@ -51,6 +51,24 @@ Masilia\Bundle\IbexaAiCraft\MasiliaIbexaAiCraftBundle::class => ['all' => true],
 
 See the README of each of them for their own routes, migrations and assets.
 
+### With Symfony Flex
+
+The Masilia recipes do the first steps for you. Add their endpoint once to the `composer.json` of your project, after the one of Ibexa:
+
+```json
+"extra": {
+    "symfony": {
+        "endpoint": [
+            "https://api.github.com/repos/ibexa/recipes/contents/index.json?ref=flex/main",
+            "https://api.github.com/repos/MasiliaLabs/recipes/contents/index.json?ref=flex/main",
+            "flex://defaults"
+        ]
+    }
+}
+```
+
+Then `composer require masilia/ibexa-ai-craft` enables the bundle. What is left is yours: the content model (`masilia:blocks:model:install`) and a provider in the admin. The manual steps above and below stay valid.
+
 ## Configuration
 
 The conventions are shared with `masilia_ibexa_blocks` when it is configured; set them here only for what differs.

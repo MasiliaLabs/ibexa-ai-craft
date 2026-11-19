@@ -7,6 +7,9 @@ description: Use and configure masilia/ibexa-ai-craft, the layer that lets the I
 
 Teaches the assistant (`masilia/ibexa-ai`) how a site is made: a page holds blocks, a block may hold items, a theme gives them templates. It reads your conventions (shared with `masilia/ibexa-blocks`) and sends every change through the approval flow. It requires `ibexa-ai`, `ibexa-blocks` and `ibexa-sites` (Composer installs them; enable their bundles and follow their READMEs).
 
+## Install
+With the Masilia recipes endpoint in the `composer.json` (`https://api.github.com/repos/MasiliaLabs/recipes/contents/index.json?ref=flex/main` in `extra.symfony.endpoint`, after Ibexa's), `composer require` already enables the bundle and writes the route and config files (see the README, section *With Symfony Flex*); then do what is left. Without the endpoint, do everything by hand.
+
 ## Capabilities (what to ask the assistant)
 - `page.*` / `site.*`: explore a site, mine its conventions from its own pages, create a site structure (container, layout, home page, media folders) in one transaction, add blocks and child items, move/remove blocks.
 - `site.config.*`: list, describe, create, update, set status, delete, default siteaccess, over `ibexa-sites`.
