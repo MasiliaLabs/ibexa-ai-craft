@@ -68,6 +68,14 @@ final class BlocksFoldersTest extends TestCase
         $this->assertSame(90, (new BlocksFolders($this->repository($contents, $locations), new Conventions()))->ensure(7, 'eng-GB'));
     }
 
+    public function testNoFolderForAContentThatCannotHoldOne(): void
+    {
+        $contents = $this->createStub(ContentService::class);
+        $contents->method('loadContentInfo')->willReturn($this->info(7, 'home', 'Home', 70, 'home_page', false));
+
+        $this->assertNull((new BlocksFolders($this->repository($contents, $this->createStub(LocationService::class)), new Conventions()))->ensureIfPossible(7, 'eng-GB'));
+    }
+
     private function repository(ContentService $contents, LocationService $locations): Repository
     {
         $repository = $this->createStub(Repository::class);
@@ -78,9 +86,9 @@ final class BlocksFoldersTest extends TestCase
         return $repository;
     }
 
-    private function info(int $id, string $remoteId, string $name, int $mainLocationId, string $type = 'page'): ContentInfo
+    private function info(int $id, string $remoteId, string $name, int $mainLocationId, string $type = 'page', bool $container = true): ContentInfo
     {
-        $info = new ContentInfo(['id' => $id, 'remoteId' => $remoteId, 'name' => $name, 'mainLocationId' => $mainLocationId, 'contentType' => new \Ibexa\Core\Repository\Values\ContentType\ContentType(['identifier' => $type])]);
+        $info = new ContentInfo(['id' => $id, 'remoteId' => $remoteId, 'name' => $name, 'mainLocationId' => $mainLocationId, 'contentType' => new \Ibexa\Core\Repository\Values\ContentType\ContentType(['identifier' => $type, 'isContainer' => $container])]);
 
         return $info;
     }

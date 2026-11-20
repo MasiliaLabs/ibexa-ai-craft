@@ -5,6 +5,7 @@ All notable changes to `masilia/ibexa-ai-craft` are documented here. The format 
 ## [Unreleased]
 
 ### Changed
+- Accepts `masilia/ibexa-blocks` 0.6 (`^0.3 || … || ^0.6`). `site.create_structure` makes the folder of the blocks of the home and of the pages only when their content type is a container.
 - The blocks of a page or of the home page are made in a folder under that page, named after it (`<page name> Blocks`, setting `conventions.blocks_folder_suffix`, shared with `masilia_ibexa_blocks`), found by the remote id `<page remote id>_blocks` and made when missing; before, they went in a folder called "<page name> items" that was found by its name. `site.create_structure` makes the folder of the home and of each page. `site.add_blocks` refuses a page that is not a container and says how to change it. The items of a block keep their own folder. Blocks that exist elsewhere are not moved.
 
 ## [2.2.3] - 2026-11-19

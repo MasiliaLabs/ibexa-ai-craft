@@ -26,6 +26,20 @@ final readonly class BlocksFolders
     }
 
     /**
+     * The folder of the blocks of a page, when its content type can hold one (it is a container); null otherwise, so that building
+     * a site on a project whose home page is not a container still works (without that folder).
+     */
+    public function ensureIfPossible(int $pageContentId, ?string $language = null): ?int
+    {
+        $info = $this->repository->getContentService()->loadContentInfo($pageContentId);
+        if (!$info->getContentType()->isContainer()) {
+            return null;
+        }
+
+        return $this->ensure($pageContentId, $language);
+    }
+
+    /**
      * @return int The main location of the folder
      */
     public function ensure(int $pageContentId, ?string $language = null): int
