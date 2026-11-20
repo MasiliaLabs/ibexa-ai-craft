@@ -4,6 +4,8 @@ All notable changes to `masilia/ibexa-ai-craft` are documented here. The format 
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-11-20
+
 ### Changed
 - Accepts `masilia/ibexa-blocks` 0.6 (`^0.3 || … || ^0.6`). `site.create_structure` makes the folder of the blocks of the home and of the pages only when their content type is a container.
 - The blocks of a page or of the home page are made in a folder under that page, named after it (`<page name> Blocks`, setting `conventions.blocks_folder_suffix`, shared with `masilia_ibexa_blocks`), found by the remote id `<page remote id>_blocks` and made when missing; before, they went in a folder called "<page name> items" that was found by its name. `site.create_structure` makes the folder of the home and of each page. `site.add_blocks` refuses a page that is not a container and says how to change it. The items of a block keep their own folder. Blocks that exist elsewhere are not moved.
@@ -58,7 +60,8 @@ First release: how Masilia sites are built, for the Ibexa AI OS.
 - `site.conventions`: how the pages of a site are built, mined from the pages themselves.
 - A self-test scenario for the page-of-blocks flow.
 
-[Unreleased]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.3...HEAD
+[Unreleased]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.3.0...HEAD
+[2.3.0]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.3...2.3.0
 [2.2.3]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.2...2.2.3
 [2.2.2]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.1...2.2.2
 [2.2.1]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.0...2.2.1
