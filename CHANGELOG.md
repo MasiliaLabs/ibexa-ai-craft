@@ -4,6 +4,9 @@ All notable changes to `masilia/ibexa-ai-craft` are documented here. The format 
 
 ## [Unreleased]
 
+### Fixed
+- `site.create_structure` fills the `logo_text` field of the layout with the name of the site when the layout type has one: the socle of `masilia/ibexa-blocks` makes it required, and the build refused such a layout ("has required fields a new site cannot fill: logo_text").
+
 ## [2.3.0] - 2026-11-20
 
 ### Changed

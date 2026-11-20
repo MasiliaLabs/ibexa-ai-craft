@@ -32,6 +32,8 @@ final readonly class SiteBuilder
     /** What each content of the skeleton is given, besides the blocks field of the pages. */
     private const SITE_FIELDS = ['title', 'domain', 'description'];
     private const LAYOUT_FIELDS = ['bo_title'];
+    /** A layout of the Masilia socle asks for a logo text: it is given the name of the site (HTML, as a rich text field takes it). */
+    private const LAYOUT_LOGO_FIELD = 'logo_text';
     private const PAGE_FIELDS = ['title', 'description'];
     private const HOME_FIELDS = ['title'];
     private const FOLDER_FIELDS = ['name'];
@@ -72,7 +74,7 @@ final readonly class SiteBuilder
         $blocks = $this->conventions->blocksField;
         foreach ([
             [$this->conventions->siteType, ($arguments['generate_images'] ?? true) ? [...self::SITE_FIELDS, self::FAVICON_FIELD] : self::SITE_FIELDS],
-            [$this->conventions->layoutType, self::LAYOUT_FIELDS],
+            [$this->conventions->layoutType, $this->layoutFields()],
             [$this->conventions->homePageType, [...self::HOME_FIELDS, $blocks]],
             [$this->conventions->pageType, [...self::PAGE_FIELDS, $blocks]],
             [$this->conventions->folderType, self::FOLDER_FIELDS],
@@ -110,7 +112,11 @@ final readonly class SiteBuilder
                 'domain' => trim((string) $arguments['domain']),
                 'description' => (string) ($arguments['description'] ?? ''),
             ], $language);
-            [$layout] = $this->create($this->conventions->layoutType, $siteLocation, ['bo_title' => sprintf('%s Layout Configuration', $name)], $language);
+            $layoutFields = ['bo_title' => sprintf('%s Layout Configuration', $name)];
+            if (in_array(self::LAYOUT_LOGO_FIELD, $this->layoutFields(), true)) {
+                $layoutFields[self::LAYOUT_LOGO_FIELD] = '<p>' . htmlspecialchars($name, ENT_QUOTES | ENT_XML1) . '</p>';
+            }
+            [$layout] = $this->create($this->conventions->layoutType, $siteLocation, $layoutFields, $language);
             [$home, $homeLocation] = $this->create($this->conventions->homePageType, $siteLocation, ['title' => 'Home', $blocks => []], $language);
             $this->blocksFolders?->ensureIfPossible($home, $language);
 
@@ -197,6 +203,23 @@ final readonly class SiteBuilder
 
             return false;
         }
+    }
+
+    /**
+     * The fields the builder gives the layout: its title, and the logo text when the type has one (the socle of masilia/ibexa-blocks
+     * makes it required, so a layout could not be made without it).
+     *
+     * @return list<string>
+     */
+    private function layoutFields(): array
+    {
+        try {
+            $has = $this->repository->getContentTypeService()->loadContentTypeByIdentifier($this->conventions->layoutType)->getFieldDefinition(self::LAYOUT_LOGO_FIELD) !== null;
+        } catch (Throwable) {
+            $has = false;
+        }
+
+        return $has ? [...self::LAYOUT_FIELDS, self::LAYOUT_LOGO_FIELD] : self::LAYOUT_FIELDS;
     }
 
     /**

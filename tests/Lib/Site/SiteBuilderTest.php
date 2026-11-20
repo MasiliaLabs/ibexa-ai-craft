@@ -138,6 +138,18 @@ final class SiteBuilderTest extends TestCase
         self::assertNull($this->builder(['site' => ['title' => true, 'domain' => true, 'description' => false]] + $types)->problem(['generate_images' => false] + self::ARGUMENTS), 'no favicon field is needed when no image is made');
     }
 
+    public function testALayoutWithARequiredLogoTextIsGivenTheNameOfTheSite(): void
+    {
+        $types = ['site' => ['title' => true, 'domain' => true, 'description' => false, 'favicon' => false], 'layout_config' => ['bo_title' => true, 'logo_text' => true], 'home_page' => ['title' => true, 'blocks' => false], 'page' => ['title' => true, 'description' => false, 'blocks' => false], 'folder' => ['name' => true]];
+        $builder = $this->builder($types);
+
+        self::assertNull($builder->problem(self::ARGUMENTS), 'the logo text is a field the builder fills');
+        $builder->build(self::ARGUMENTS + ['generate_images' => false]);
+
+        $layout = array_values(array_filter($this->created, static fn (array $c): bool => $c[0] === 'layout_config'))[0];
+        self::assertSame('<p>Solar Atlas</p>', $layout[2]['logo_text']);
+    }
+
     public function testTheSiteIsBuiltWhereTheSiteaccessSaysWithTheTypesOfTheConventionsInOneTransaction(): void
     {
         $conventions = new Conventions(pageType: 'landing', blocksField: 'sections', siteType: 'website', homePageType: 'front', layoutType: 'chrome', folderType: 'directory');
