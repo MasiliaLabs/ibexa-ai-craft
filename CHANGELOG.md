@@ -4,6 +4,9 @@ All notable changes to `masilia/ibexa-ai-craft` are documented here. The format 
 
 ## [Unreleased]
 
+### Added
+- Docs: a *Stay informed* section in the README: how to be told of new releases (GitHub Watch, the releases feed, `composer outdated`, Dependabot) and where to read what changes.
+
 ## [2.3.1] - 2026-11-20
 
 ### Fixed
