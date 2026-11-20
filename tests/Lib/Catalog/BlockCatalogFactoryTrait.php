@@ -31,6 +31,7 @@ final class FakeContentType extends CoreContentType
             'descriptions' => [],
             'mainLanguageCode' => 'eng-GB',
             'fieldDefinitions' => $fieldDefinitions,
+            'isContainer' => true,
         ]);
     }
 }

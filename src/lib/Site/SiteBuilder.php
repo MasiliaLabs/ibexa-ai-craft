@@ -46,6 +46,7 @@ final readonly class SiteBuilder
         private ImageGenerator $images,
         private LoggerInterface $aiLogger,
         private Conventions $conventions = new Conventions(),
+        private ?BlocksFolders $blocksFolders = null,
     ) {
     }
 
@@ -111,6 +112,7 @@ final readonly class SiteBuilder
             ], $language);
             [$layout] = $this->create($this->conventions->layoutType, $siteLocation, ['bo_title' => sprintf('%s Layout Configuration', $name)], $language);
             [$home, $homeLocation] = $this->create($this->conventions->homePageType, $siteLocation, ['title' => 'Home', $blocks => []], $language);
+            $this->blocksFolders?->ensure($home, $language);
 
             [$media, $mediaLocation] = $this->create($this->conventions->folderType, (int) $this->mediaRoot($arguments), ['name' => sprintf('%s Media', $name)], $language);
             foreach (self::MEDIA_FOLDERS as $folder) {
@@ -152,6 +154,7 @@ final readonly class SiteBuilder
                 'description' => (string) ($page['description'] ?? ''),
                 $this->conventions->blocksField => [],
             ], $language);
+            $this->blocksFolders?->ensure($id, $language);
             $entry = ['content_id' => $id, 'location_id' => $location, 'title' => $title];
             if (!empty($page['children'])) {
                 $entry['children'] = $this->pages((array) $page['children'], $location, $language);

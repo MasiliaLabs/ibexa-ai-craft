@@ -36,6 +36,7 @@ The conventions must match the real content model. Wrong names are the first cau
 ## Troubleshooting
 - "has no list-of-relations field items (it has: cards)": declare `items_field_by_type` for that block type (in `masilia_ibexa_blocks`, craft reads it).
 - "no content type X to build a site with": install the content model first (Kaliop migrations or `masilia:blocks:model:install` from ibexa-blocks), then retry.
+- Where blocks go: the blocks of a page/home are made in the folder `<page name> Blocks` under it (remote id `<page remote id>_blocks`, made when missing; `conventions.blocks_folder_suffix`); the page must be a container (`home_page` needs `masilia:blocks:model:install --allow-container` on an existing project: the capability says so). Existing blocks are not moved.
 - A site is created as draft by the registry; activating serves its hosts: ask the user, do not do it silently.
 - A block is refused on a page: the page's blocks field restricts the types (`selectionContentTypes`); the block must be allowed there.
 - Craft's required fields for site creation are checked before anything is written; a layout needs its required fields fillable by the builder.

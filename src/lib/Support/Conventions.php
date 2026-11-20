@@ -21,6 +21,7 @@ final readonly class Conventions
      * @param string       $homePageType  The content type of the home page of a site (a page of blocks)
      * @param string       $layoutType    The content type of the layout configuration of a site (its back-office title)
      * @param string       $folderType    The content type of a folder (its name)
+     * @param string       $blocksFolderSuffix The end of the name of the folder that holds the blocks of a page ("Home Blocks")
      */
     public function __construct(
         public string $blockGroup = 'Blocks',
@@ -33,6 +34,7 @@ final readonly class Conventions
         public string $layoutType = 'layout_config',
         public string $folderType = 'folder',
         public array $itemsFieldByType = [],
+        public string $blocksFolderSuffix = 'Blocks',
     ) {
     }
 
@@ -60,6 +62,7 @@ final readonly class Conventions
             layoutType: (string) ($settings['layout_type'] ?? $defaults->layoutType),
             folderType: (string) ($settings['folder_type'] ?? $defaults->folderType),
             itemsFieldByType: array_map('strval', (array) ($settings['items_field_by_type'] ?? $defaults->itemsFieldByType)),
+            blocksFolderSuffix: (string) ($settings['blocks_folder_suffix'] ?? $defaults->blocksFolderSuffix),
         );
     }
 }

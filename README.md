@@ -82,12 +82,15 @@ masilia_ibexa_ai_craft:
         items_field_by_type:            # block types that call it differently
             info_cards: cards
         block_group: Blocks             # the content type group of the blocks
+        blocks_folder_suffix: Blocks    # the blocks of a page go in a folder under it: "<page name> Blocks" (shared with masilia_ibexa_blocks)
         site_type: site
         home_page_type: home_page
         layout_type: layout_config
         folder_type: folder
     theme_creation: false               # true lets theme.create write the files of a new theme
 ```
+
+**Where blocks are made**: the blocks of a page or of the home page go in a folder under that page, named after it (`About Blocks`) and found by the remote id of the page and `_blocks`; the folder is made when it is missing, and the page must be a container (`home_page` is one from `masilia/ibexa-blocks` 0.6, `masilia:blocks:model:install --allow-container` for a project that has it already). `site.create_structure` makes the folder of the home and of each page it creates. Blocks that exist elsewhere are not moved, and the child items of a block keep their own folder.
 
 ## Usage
 

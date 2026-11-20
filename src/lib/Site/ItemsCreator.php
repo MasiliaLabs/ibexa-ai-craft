@@ -52,6 +52,10 @@ final readonly class ItemsCreator
             return sprintf('The content %d does not exist.', $contentId);
         }
 
+        if ($this->holdsPageBlocks($parentType->identifier, $linkField) && !$parentType->isContainer()) {
+            return sprintf('The content type "%s" is not a container, so the folder of its blocks cannot go under it: make it one (masilia:blocks:model:install --allow-container with masilia/ibexa-blocks).', $parentType->identifier);
+        }
+
         return $this->itemsProblem($parentType, $linkField, $items, 1);
     }
 
@@ -148,7 +152,9 @@ final readonly class ItemsCreator
         $info = $contents->loadContentInfo($contentId);
         $lang = $language ?? $info->mainLanguageCode;
 
-        $folder = $this->folderUnder($info->getMainLocation()->id, trim(($info->name ?? 'items') . ' items') ?: 'items', $lang);
+        $folder = $this->holdsPageBlocks($info->getContentType()->identifier, $linkField)
+            ? (new BlocksFolders($this->repository, $this->conventions))->ensure($contentId, $lang)
+            : $this->folderUnder($info->getMainLocation()->id, trim(($info->name ?? 'items') . ' items') ?: 'items', $lang);
 
         $ids = [];
         foreach ($items as $item) {
@@ -163,6 +169,12 @@ final readonly class ItemsCreator
         $this->link($contentId, $linkField, $ids, $lang);
 
         return $ids;
+    }
+
+    /** The blocks of a page or of the home page go in the folder of its blocks; the items of a block keep their own folder. */
+    private function holdsPageBlocks(string $contentType, string $linkField): bool
+    {
+        return $linkField === $this->conventions->blocksField && in_array($contentType, [$this->conventions->pageType, $this->conventions->homePageType], true);
     }
 
     /**
