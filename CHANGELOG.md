@@ -4,6 +4,11 @@ All notable changes to `masilia/ibexa-ai-craft` are documented here. The format 
 
 ## [Unreleased]
 
+## [2.3.3] - 2026-11-26
+
+### Changed
+- Works with `masilia/ibexa-ai` 3 and `masilia/ibexa-sites` 0.3 (their constraints are widened; no code changes).
+
 ## [2.3.2] - 2026-11-20
 
 ### Added
@@ -70,7 +75,8 @@ First release: how Masilia sites are built, for the Ibexa AI OS.
 - `site.conventions`: how the pages of a site are built, mined from the pages themselves.
 - A self-test scenario for the page-of-blocks flow.
 
-[Unreleased]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.3.2...HEAD
+[Unreleased]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.3.3...HEAD
+[2.3.3]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.3.2...2.3.3
 [2.3.2]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.3.0...2.3.1
 [2.3.0]: https://github.com/MasiliaLabs/ibexa-ai-craft/compare/2.2.3...2.3.0
