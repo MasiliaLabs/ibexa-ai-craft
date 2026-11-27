@@ -2,6 +2,12 @@
 
 What to change in your project when you move to a version that breaks something. The full list of changes is in the [CHANGELOG](CHANGELOG.md).
 
+## From 2.x to 3.0
+
+- Requires `masilia/ibexa-blocks` `^0.8` (see its [UPGRADE.md](https://github.com/MasiliaLabs/ibexa-blocks/blob/main/UPGRADE.md): every setting is per site, under `system`). Update it first, and move its settings under `system.default` as that guide says.
+- **The conventions are those of the site of the request.** `Support\Conventions` is no longer a service built at compilation: classes that need them take `Masilia\IbexaAiCraft\Support\ConventionsSource` (the bundle gives `DependencyInjection\BlocksConventions`, which reads those of `masilia/ibexa-blocks` for the site, or the settings of this bundle) and ask it `conventions()` each time. A class of yours that was given `Conventions` keeps working with a `Conventions` object (it is its own source). The compiler pass `SharedConventionsPass` and the `masilia_blocks.conventions` parameter it read are gone.
+- `newsletter.subscribers.list` has an optional `list` and its rows say their list (the subscribers are per list in `masilia/ibexa-blocks` 0.8): all the lists by default, as before.
+
 ## From 1.x to 2.0
 
 - Requires `masilia/ibexa-ai` `^2.0` (see its [UPGRADE.md](https://github.com/MasiliaLabs/ibexa-ai/blob/master/UPGRADE.md)).
