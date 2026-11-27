@@ -29,12 +29,12 @@ final class NewsletterSubscribersCapability extends AbstractCapability
 
     public function description(): string
     {
-        return 'Counts the subscribers and lists the latest, with their e-mail address, name, whether they confirmed and whether they are active. Personal data: only for an administrator, and not to be repeated beyond what is asked.';
+        return 'Counts the subscribers and lists the latest, with their list (the newsletter of a site, or of the sites that share it), e-mail address, name, whether they confirmed and whether they are active. Personal data: only for an administrator, and not to be repeated beyond what is asked.';
     }
 
     public function inputSchema(): array
     {
-        return ['type' => 'object', 'properties' => ['limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100, 'description' => 'How many of the latest (default 20)']]];
+        return ['type' => 'object', 'properties' => ['limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100, 'description' => 'How many of the latest (default 20)'], 'list' => ['type' => 'string', 'description' => 'Only the subscribers of this list (the newsletter.list_id of a site; each row says its list). Default: all the lists']]];
     }
 
     public function risk(): Risk
@@ -59,13 +59,15 @@ final class NewsletterSubscribersCapability extends AbstractCapability
 
     public function preview(array $arguments): Preview
     {
-        return new Preview('Read the newsletter subscribers', [['Latest', (string) (int) ($arguments['limit'] ?? 20)]], ['The e-mail addresses and names of the subscribers are shown: personal data.']);
+        return new Preview('Read the newsletter subscribers', [['Latest', (string) (int) ($arguments['limit'] ?? 20)], ['List', (string) ($arguments['list'] ?? 'all')]], ['The e-mail addresses and names of the subscribers are shown: personal data.']);
     }
 
     public function execute(array $arguments): CapabilityResult
     {
         $subscribers = $this->subscribers ?? throw new \LogicException('validate() refuses a project without a newsletter.');
 
-        return CapabilityResult::ok(sprintf('%d subscriber(s).', $subscribers->count()), ['count' => $subscribers->count(), 'latest' => $subscribers->latest((int) ($arguments['limit'] ?? 20))]);
+        $list = isset($arguments['list']) && $arguments['list'] !== '' ? (string) $arguments['list'] : null;
+
+        return CapabilityResult::ok(sprintf('%d subscriber(s)%s.', $subscribers->count($list), $list !== null ? ' in the list ' . $list : ''), ['count' => $subscribers->count($list), 'latest' => $subscribers->latest((int) ($arguments['limit'] ?? 20), $list)]);
     }
 }

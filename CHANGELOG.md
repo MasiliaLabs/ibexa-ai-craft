@@ -5,6 +5,7 @@ All notable changes to `masilia/ibexa-ai-craft` are documented here. The format 
 ## [Unreleased]
 
 ### Changed
+- `newsletter.subscribers.list` takes an optional `list` (the `newsletter.list_id` of a site) and its rows say their list: the subscribers are per list since `masilia/ibexa-blocks` 0.8 (all the lists by default).
 - **Breaking:** needs `masilia/ibexa-blocks` ^0.8, whose settings are per site. The conventions of the front office (page type, blocks field, items fields, groups) are read for the site of the request each time they are used, through the new `ConventionsSource` (`DependencyInjection\BlocksConventions` in the bundle); the compiler pass that copied them at compilation, and the `masilia_blocks.conventions` parameter it read, are gone. `Support\Conventions` is its own source, so a class that was given one still works.
 
 ## [2.3.3] - 2026-11-26
