@@ -8,6 +8,7 @@ use Ibexa\Core\MVC\Symfony\SiteAccess\SiteAccessServiceInterface;
 use Masilia\IbexaAiCraft\Catalog\BlockCatalog;
 use Masilia\IbexaAiCraft\Catalog\ContentCatalog;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Site\SiteLocations;
 use Masilia\Contracts\IbexaBlocks\ShownBlocks;
 use Psr\Log\LoggerInterface;
@@ -28,7 +29,7 @@ final readonly class SiteExplorer
         private BlockCatalog               $blocks,
         private LoggerInterface            $aiLogger,
         private ?ContentCatalog            $contentCatalog = null,
-        private Conventions                $conventions = new Conventions(),
+        private ConventionsSource                $conventionsSource = new Conventions(),
         /** With masilia/ibexa-blocks: the block types the design of the site can show; the others are left out of the answer */
         private ?ShownBlocks               $shownBlocks = null,
     ) {
@@ -160,7 +161,7 @@ final readonly class SiteExplorer
     private function findParents(string $siteaccess, int $rootLocationId): array
     {
         try {
-            return array_map(static fn (array $candidate): array => $candidate + ['siteaccess' => $siteaccess], $this->parents->under($rootLocationId, $this->conventions->pageType));
+            return array_map(static fn (array $candidate): array => $candidate + ['siteaccess' => $siteaccess], $this->parents->under($rootLocationId, $this->conventionsSource->conventions()->pageType));
         } catch (Throwable $e) {
             $this->aiLogger->warning('[SiteExplorer] The pages of {siteaccess} could not be read: {message}', ['siteaccess' => $siteaccess, 'message' => $e->getMessage()]);
 
@@ -180,12 +181,12 @@ final readonly class SiteExplorer
             return [];
         }
 
-        $schema = $this->contentCatalog->getContentTypeSchema($this->conventions->pageType);
+        $schema = $this->contentCatalog->getContentTypeSchema($this->conventionsSource->conventions()->pageType);
         if ($schema === null) {
             return [];
         }
 
-        $blocksField = $schema['fields'][$this->conventions->blocksField] ?? null;
+        $blocksField = $schema['fields'][$this->conventionsSource->conventions()->blocksField] ?? null;
         if (!is_array($blocksField)) {
             return [];
         }

@@ -6,6 +6,7 @@ namespace Masilia\IbexaAiCraft\Capability;
 
 use Ibexa\Contracts\Core\Repository\ContentTypeService;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Content\ContentTypeSchemas;
 use Masilia\Contracts\IbexaAi\Os\AbstractCapability;
 use Masilia\Contracts\IbexaAi\Os\CapabilityResult;
@@ -18,7 +19,7 @@ final class ItemTypesCapability extends AbstractCapability
         private readonly ShownViews $views,
         private readonly ContentTypeService $types,
         private readonly ContentTypeSchemas $schemas,
-        private readonly Conventions $conventions,
+        private readonly ConventionsSource $conventionsSource,
     ) {
     }
 
@@ -62,7 +63,7 @@ final class ItemTypesCapability extends AbstractCapability
     {
         $blocks = [];
         try {
-            foreach ($this->types->loadContentTypes($this->types->loadContentTypeGroupByIdentifier($this->conventions->blockGroup)) as $type) {
+            foreach ($this->types->loadContentTypes($this->types->loadContentTypeGroupByIdentifier($this->conventionsSource->conventions()->blockGroup)) as $type) {
                 $blocks[$type->identifier] = true;
             }
         } catch (\Throwable) {

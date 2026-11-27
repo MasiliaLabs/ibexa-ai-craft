@@ -9,6 +9,7 @@ use Masilia\Contracts\IbexaAi\Os\Selftest\SelftestContext;
 use Masilia\Contracts\IbexaAi\Os\Selftest\SelftestScenario;
 use Masilia\Contracts\IbexaSites\SiteRegistry;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Throwable;
 
 /**
@@ -23,7 +24,7 @@ final class CraftSelftestScenario implements SelftestScenario
 
     public function __construct(
         private readonly Repository $repository,
-        private readonly Conventions $conventions,
+        private readonly ConventionsSource $conventionsSource,
         private readonly SiteRegistry $registry,
     ) {
     }
@@ -37,18 +38,18 @@ final class CraftSelftestScenario implements SelftestScenario
     {
         $types = $this->repository->getContentTypeService();
         try {
-            $page = $types->loadContentTypeByIdentifier($this->conventions->pageType);
+            $page = $types->loadContentTypeByIdentifier($this->conventionsSource->conventions()->pageType);
         } catch (Throwable) {
-            $context->skip(sprintf('%s: there is no content type "%s"', $this->name(), $this->conventions->pageType));
+            $context->skip(sprintf('%s: there is no content type "%s"', $this->name(), $this->conventionsSource->conventions()->pageType));
 
             return;
         }
-        $blocks = $page->getFieldDefinition($this->conventions->blocksField);
+        $blocks = $page->getFieldDefinition($this->conventionsSource->conventions()->blocksField);
         $allowed = array_values((array) ($blocks?->getFieldSettings()['selectionContentTypes'] ?? []));
         $pageFields = RequiredFields::for($page, 'Selftest ' . $context->stamp);
         $blockType = $this->fillableBlock($allowed, $context->stamp);
         if ($blocks === null || $pageFields === null || $blockType === null) {
-            $context->skip(sprintf('%s: the page needs a field "%s" and a block type with plain required fields', $this->name(), $this->conventions->blocksField));
+            $context->skip(sprintf('%s: the page needs a field "%s" and a block type with plain required fields', $this->name(), $this->conventionsSource->conventions()->blocksField));
 
             return;
         }
@@ -57,7 +58,7 @@ final class CraftSelftestScenario implements SelftestScenario
         $context->step('explore: the sites are listed', 'site.explore', [], static fn (array $d): ?string => ($d['siteaccesses'] ?? []) !== [] ? null : 'no siteaccess');
 
         $context->step('create a page', 'content.create', [
-            'content_type' => $this->conventions->pageType,
+            'content_type' => $this->conventionsSource->conventions()->pageType,
             'parent_location_id' => $context->parentLocationId,
             'fields' => $pageFields,
         ], null, 'page');
@@ -183,7 +184,7 @@ final class CraftSelftestScenario implements SelftestScenario
         $candidates = $allowed;
         if ($candidates === []) {
             try {
-                $group = $types->loadContentTypeGroupByIdentifier($this->conventions->blockGroup);
+                $group = $types->loadContentTypeGroupByIdentifier($this->conventionsSource->conventions()->blockGroup);
                 foreach ($types->loadContentTypes($group) as $type) {
                     $candidates[] = $type->identifier;
                 }

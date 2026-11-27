@@ -8,6 +8,7 @@ use Ibexa\Contracts\Core\Repository\Repository;
 use Masilia\Contracts\IbexaAi\Os\AbstractCapability;
 use Masilia\IbexaAiCraft\Site\ItemsCreator;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Os\CapabilityResult;
 use Masilia\Contracts\IbexaAi\Os\Preview;
 use Masilia\Contracts\IbexaAi\Os\Risk;
@@ -18,7 +19,7 @@ final class AddBlocksCapability extends AbstractCapability
     public function __construct(
         private readonly ItemsCreator $creator,
         private readonly Repository $repository,
-        private readonly Conventions $conventions,
+        private readonly ConventionsSource $conventionsSource,
     ) {
     }
 
@@ -39,8 +40,8 @@ final class AddBlocksCapability extends AbstractCapability
             . 'keeping what the field already lists. An item is {type, fields, items?}: "items" are the child items of that block, created and linked too, so a whole page is one call. '
             . 'type must be one the field accepts (site.explore gives parentBlocksAllowedTypes and the block types with their fields). If one item fails none is kept. '
             . 'The answer has item_ids (the blocks, in order) and children (the items created under each block).',
-            $this->conventions->blocksField,
-            $this->conventions->itemsField,
+            $this->conventionsSource->conventions()->blocksField,
+            $this->conventionsSource->conventions()->itemsField,
         );
     }
 
@@ -51,7 +52,7 @@ final class AddBlocksCapability extends AbstractCapability
             'required' => ['content_id', 'items'],
             'properties' => [
                 'content_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'The page (or block) the items belong to'],
-                'link_field' => ['type' => 'string', 'description' => sprintf('The list-of-relations field that receives them (default "%s")', $this->conventions->blocksField)],
+                'link_field' => ['type' => 'string', 'description' => sprintf('The list-of-relations field that receives them (default "%s")', $this->conventionsSource->conventions()->blocksField)],
                 'items' => [
                     'type' => 'array',
                     'minItems' => 1,
@@ -97,7 +98,7 @@ final class AddBlocksCapability extends AbstractCapability
 
     public function validate(array $arguments): ?string
     {
-        return $this->creator->problem((int) $arguments['content_id'], (string) ($arguments['link_field'] ?? $this->conventions->blocksField), (array) $arguments['items'], isset($arguments['language']) ? (string) $arguments['language'] : null);
+        return $this->creator->problem((int) $arguments['content_id'], (string) ($arguments['link_field'] ?? $this->conventionsSource->conventions()->blocksField), (array) $arguments['items'], isset($arguments['language']) ? (string) $arguments['language'] : null);
     }
 
     public function preview(array $arguments): Preview
@@ -117,7 +118,7 @@ final class AddBlocksCapability extends AbstractCapability
             'Add blocks',
             [
                 ['Content', $name !== '' ? sprintf('%s (content %d)', $name, (int) $arguments['content_id']) : (string) (int) $arguments['content_id']],
-                ['Field', (string) ($arguments['link_field'] ?? $this->conventions->blocksField)],
+                ['Field', (string) ($arguments['link_field'] ?? $this->conventionsSource->conventions()->blocksField)],
                 ['Blocks', implode(', ', $blocks)],
             ],
             ['A new version of the content is published.'],
@@ -129,7 +130,7 @@ final class AddBlocksCapability extends AbstractCapability
         $contentId = (int) $arguments['content_id'];
         $result = $this->creator->create(
             $contentId,
-            (string) ($arguments['link_field'] ?? $this->conventions->blocksField),
+            (string) ($arguments['link_field'] ?? $this->conventionsSource->conventions()->blocksField),
             array_values((array) $arguments['items']),
             isset($arguments['language']) ? (string) $arguments['language'] : null,
         );

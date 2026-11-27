@@ -8,6 +8,7 @@ use Ibexa\Contracts\Core\Repository\Repository;
 use Ibexa\Contracts\Core\Repository\Values\Content\Query;
 use Ibexa\Contracts\Core\Repository\Values\Content\Query\Criterion;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Throwable;
 
 /**
@@ -20,7 +21,7 @@ final readonly class ConventionMiner
 
     public function __construct(
         private Repository $repository,
-        private Conventions $conventions,
+        private ConventionsSource $conventionsSource,
     ) {
     }
 
@@ -34,7 +35,7 @@ final readonly class ConventionMiner
         $used = array_column($summary['block_types'], 'type');
 
         return $summary + [
-            'page_type' => $this->conventions->pageType,
+            'page_type' => $this->conventionsSource->conventions()->pageType,
             'root_location_id' => $rootLocationId,
             'accepted_but_unused' => array_values(array_diff($this->acceptedBlockTypes(), $used)),
         ];
@@ -48,7 +49,7 @@ final readonly class ConventionMiner
         $root = $this->repository->getLocationService()->loadLocation($rootLocationId);
         $query = new Query([
             'filter' => new Criterion\LogicalAnd([
-                new Criterion\ContentTypeIdentifier($this->conventions->pageType),
+                new Criterion\ContentTypeIdentifier($this->conventionsSource->conventions()->pageType),
                 new Criterion\Subtree($root->pathString),
             ]),
             'sortClauses' => [new Query\SortClause\DatePublished(Query::SORT_DESC)],
@@ -62,7 +63,7 @@ final readonly class ConventionMiner
             $info = $hit->valueObject;
             try {
                 $page = $contents->loadContent($info->id);
-                $ids = $page->getFieldValue($this->conventions->blocksField)->destinationContentIds ?? [];
+                $ids = $page->getFieldValue($this->conventionsSource->conventions()->blocksField)->destinationContentIds ?? [];
             } catch (Throwable) {
                 continue;
             }
@@ -81,7 +82,7 @@ final readonly class ConventionMiner
                     $filled[$definition->identifier] = $value !== null && !$fieldTypes->getFieldType($definition->fieldTypeIdentifier)->isEmptyValue($value);
                 }
                 $entry = ['type' => $type->identifier, 'filled' => $filled];
-                $itemsValue = $block->getFieldValue($this->conventions->itemsFieldFor($type->identifier));
+                $itemsValue = $block->getFieldValue($this->conventionsSource->conventions()->itemsFieldFor($type->identifier));
                 if ($itemsValue !== null && isset($itemsValue->destinationContentIds)) {
                     $entry['children'] = count((array) $itemsValue->destinationContentIds);
                 }
@@ -99,9 +100,9 @@ final readonly class ConventionMiner
     private function acceptedBlockTypes(): array
     {
         try {
-            $page = $this->repository->getContentTypeService()->loadContentTypeByIdentifier($this->conventions->pageType);
+            $page = $this->repository->getContentTypeService()->loadContentTypeByIdentifier($this->conventionsSource->conventions()->pageType);
 
-            return array_values((array) ($page->getFieldDefinition($this->conventions->blocksField)?->getFieldSettings()['selectionContentTypes'] ?? []));
+            return array_values((array) ($page->getFieldDefinition($this->conventionsSource->conventions()->blocksField)?->getFieldSettings()['selectionContentTypes'] ?? []));
         } catch (Throwable) {
             return [];
         }

@@ -7,9 +7,12 @@ services:
             $aiLogger: '@logger'
             $cache: '@cache.app'
 
-    Masilia\IbexaAiCraft\Support\Conventions:
-        factory: ['Masilia\IbexaAiCraft\Support\Conventions', 'fromSettings']
-        arguments: ['%ibexa_ai_craft.conventions%']
+    # The conventions of the site of the request: those of masilia/ibexa-blocks when it is there, else the bundle's own.
+    Masilia\Bundle\IbexaAiCraft\DependencyInjection\BlocksConventions:
+        arguments:
+            $own: '%ibexa_ai_craft.conventions%'
+            $blocks: '@?Masilia\Bundle\IbexaBlocks\Site\SettingsProvider'
+    Masilia\IbexaAiCraft\Support\ConventionsSource: '@Masilia\Bundle\IbexaAiCraft\DependencyInjection\BlocksConventions'
 
     Masilia\IbexaAiCraft\Catalog\:
         resource: '../../../lib/Catalog/'

@@ -8,6 +8,7 @@ use Ibexa\Contracts\Core\Repository\ContentTypeService;
 use Ibexa\Contracts\Core\Repository\Exceptions\NotFoundException;
 use Ibexa\Contracts\Core\Repository\Values\ContentType\ContentType;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Content\ContentTypeSchemas;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -35,7 +36,7 @@ final class ContentCatalog
         private readonly ContentTypeService $contentTypeService,
         private readonly CacheItemPoolInterface $cache,
         private readonly ContentTypeSchemas $schemas,
-        private readonly Conventions $conventions = new Conventions(),
+        private readonly ConventionsSource $conventionsSource = new Conventions(),
     ) {
     }
 
@@ -60,7 +61,7 @@ final class ContentCatalog
             return $this->memo;
         }
 
-        $item = $this->cache->getItem(self::CACHE_KEY . '.' . md5(implode('|', $this->conventions->contentGroups)));
+        $item = $this->cache->getItem(self::CACHE_KEY . '.' . md5(implode('|', $this->conventionsSource->conventions()->contentGroups)));
         if ($item->isHit()) {
             return $this->memo = $item->get();
         }
@@ -87,7 +88,7 @@ final class ContentCatalog
     {
         $allTypes = [];
 
-        foreach ($this->conventions->contentGroups as $groupIdentifier) {
+        foreach ($this->conventionsSource->conventions()->contentGroups as $groupIdentifier) {
             try {
                 $group = $this->contentTypeService->loadContentTypeGroupByIdentifier($groupIdentifier);
             } catch (NotFoundException) {

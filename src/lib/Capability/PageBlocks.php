@@ -6,6 +6,7 @@ namespace Masilia\IbexaAiCraft\Capability;
 
 use Ibexa\Contracts\Core\Repository\Repository;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Throwable;
 
 /** Reads the blocks of a page, in the order they are shown: the relations of its blocks field. */
@@ -13,7 +14,7 @@ readonly class PageBlocks
 {
     public function __construct(
         private Repository $repository,
-        private Conventions $conventions,
+        private ConventionsSource $conventionsSource,
     ) {
     }
 
@@ -29,10 +30,10 @@ readonly class PageBlocks
         } catch (Throwable) {
             throw new \RuntimeException(sprintf('The content %d does not exist.', $pageId));
         }
-        if (!$page->getContentType()->hasFieldDefinition($this->conventions->blocksField)) {
-            throw new \RuntimeException(sprintf('"%s" (content %d) has no "%s" field: it is not a page of blocks.', $page->getName(), $pageId, $this->conventions->blocksField));
+        if (!$page->getContentType()->hasFieldDefinition($this->conventionsSource->conventions()->blocksField)) {
+            throw new \RuntimeException(sprintf('"%s" (content %d) has no "%s" field: it is not a page of blocks.', $page->getName(), $pageId, $this->conventionsSource->conventions()->blocksField));
         }
-        $value = $page->getFieldValue($this->conventions->blocksField);
+        $value = $page->getFieldValue($this->conventionsSource->conventions()->blocksField);
 
         return array_values(array_map('intval', is_object($value) && property_exists($value, 'destinationContentIds') ? $value->destinationContentIds : []));
     }
@@ -47,7 +48,7 @@ readonly class PageBlocks
         foreach ($this->ids($pageId) as $position => $blockId) {
             try {
                 $block = $contents->loadContent($blockId);
-                $items = $block->getContentType()->hasFieldDefinition($this->conventions->itemsField) ? $this->count($block->getFieldValue($this->conventions->itemsField)) : null;
+                $items = $block->getContentType()->hasFieldDefinition($this->conventionsSource->conventions()->itemsField) ? $this->count($block->getFieldValue($this->conventionsSource->conventions()->itemsField)) : null;
                 $blocks[] = ['position' => $position, 'content_id' => $blockId, 'type' => $block->getContentType()->getIdentifier(), 'name' => $block->getName(), 'items' => $items];
             } catch (Throwable) {
                 $blocks[] = ['position' => $position, 'content_id' => $blockId, 'type' => '?', 'name' => '(not readable)', 'items' => null];

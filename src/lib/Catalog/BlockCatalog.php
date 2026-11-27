@@ -8,6 +8,7 @@ use Ibexa\Contracts\Core\Repository\ContentTypeService;
 use Ibexa\Contracts\Core\Repository\Exceptions\NotFoundException;
 use Ibexa\Contracts\Core\Repository\Values\ContentType\ContentType;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Content\ContentTypeSchemas;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -29,7 +30,7 @@ final class BlockCatalog
         private readonly ContentTypeService $contentTypeService,
         private readonly CacheItemPoolInterface $cache,
         private readonly ContentTypeSchemas $schemas,
-        private readonly Conventions $conventions = new Conventions(),
+        private readonly ConventionsSource $conventionsSource = new Conventions(),
     ) {
     }
 
@@ -55,7 +56,7 @@ final class BlockCatalog
             return $this->memo;
         }
 
-        $item = $this->cache->getItem(self::CACHE_KEY . '.' . md5($this->conventions->blockGroup));
+        $item = $this->cache->getItem(self::CACHE_KEY . '.' . md5($this->conventionsSource->conventions()->blockGroup));
         if ($item->isHit()) {
             return $this->memo = $item->get();
         }
@@ -156,7 +157,7 @@ final class BlockCatalog
     private function loadBlockTypes(): array
     {
         try {
-            $group = $this->contentTypeService->loadContentTypeGroupByIdentifier($this->conventions->blockGroup);
+            $group = $this->contentTypeService->loadContentTypeGroupByIdentifier($this->conventionsSource->conventions()->blockGroup);
         } catch (NotFoundException $e) {
             return [];
         }

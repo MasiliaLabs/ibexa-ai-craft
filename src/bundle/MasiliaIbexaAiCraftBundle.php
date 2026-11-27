@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Masilia\Bundle\IbexaAiCraft;
 
-use Masilia\Bundle\IbexaAiCraft\DependencyInjection\Compiler\SharedConventionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -18,6 +17,5 @@ final class MasiliaIbexaAiCraftBundle extends Bundle
     {
         parent::build($container);
 
-        $container->addCompilerPass(new SharedConventionsPass());
     }
 }

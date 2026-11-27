@@ -8,6 +8,7 @@ use Ibexa\Contracts\Core\Repository\Exceptions\NotFoundException;
 use Ibexa\Contracts\Core\Repository\Repository;
 use Masilia\IbexaAiCraft\Support\BlocksFolder;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use RuntimeException;
 
 /**
@@ -21,7 +22,7 @@ final readonly class BlocksFolders
 
     public function __construct(
         private Repository $repository,
-        private Conventions $conventions,
+        private ConventionsSource $conventionsSource,
     ) {
     }
 
@@ -63,15 +64,15 @@ final readonly class BlocksFolders
         }
         $parent = $locations->loadLocation((int) $page->mainLocationId);
         foreach ($locations->loadLocationChildren($parent, 0, 100) as $child) {
-            if ($child->contentInfo->getContentType()->identifier === $this->conventions->folderType
-                && BlocksFolder::nameMatches((string) $child->getContent()->getName(), $this->conventions->blocksFolderSuffix)) {
+            if ($child->contentInfo->getContentType()->identifier === $this->conventionsSource->conventions()->folderType
+                && BlocksFolder::nameMatches((string) $child->getContent()->getName(), $this->conventionsSource->conventions()->blocksFolderSuffix)) {
                 return (int) $child->id;
             }
         }
 
-        $struct = $contents->newContentCreateStruct($this->repository->getContentTypeService()->loadContentTypeByIdentifier($this->conventions->folderType), $language);
+        $struct = $contents->newContentCreateStruct($this->repository->getContentTypeService()->loadContentTypeByIdentifier($this->conventionsSource->conventions()->folderType), $language);
         $struct->remoteId = $remoteId;
-        $struct->setField(self::FOLDER_NAME, BlocksFolder::name((string) $page->name, $this->conventions->blocksFolderSuffix), $language);
+        $struct->setField(self::FOLDER_NAME, BlocksFolder::name((string) $page->name, $this->conventionsSource->conventions()->blocksFolderSuffix), $language);
         $published = $contents->publishVersion($contents->createContent($struct, [$locations->newLocationCreateStruct($parent->id)])->getVersionInfo());
 
         return (int) $published->contentInfo->getMainLocation()->id;

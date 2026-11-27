@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Masilia\IbexaAiCraft\Capability;
 
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Content\ContentWriter;
 use Masilia\Contracts\IbexaAi\Content\Languages;
 use Masilia\Contracts\IbexaAi\Os\AbstractCapability;
@@ -18,7 +19,7 @@ final class PageBlockRemoveCapability extends AbstractCapability
         private readonly PageBlocks $blocks,
         private readonly ContentWriter $writer,
         private readonly Languages $languages,
-        private readonly Conventions $conventions,
+        private readonly ConventionsSource $conventionsSource,
     ) {
     }
 
@@ -37,7 +38,7 @@ final class PageBlockRemoveCapability extends AbstractCapability
         return sprintf(
             'Removes the block from the "%s" field of the page, so that the page no longer shows it, and publishes a new version of the page. The block content is not deleted: '
             . 'trash it too with content.trash (in one propose_changes) if it is not used anywhere else.',
-            $this->conventions->blocksField,
+            $this->conventionsSource->conventions()->blocksField,
         );
     }
 
@@ -86,7 +87,7 @@ final class PageBlockRemoveCapability extends AbstractCapability
     public function execute(array $arguments): CapabilityResult
     {
         $remaining = $this->remaining($arguments);
-        $this->writer->update((int) $arguments['content_id'], [$this->conventions->blocksField => $remaining], $this->languages->default());
+        $this->writer->update((int) $arguments['content_id'], [$this->conventionsSource->conventions()->blocksField => $remaining], $this->languages->default());
 
         return CapabilityResult::ok(sprintf('Block %d is no longer on the page', (int) $arguments['block_content_id']), ['blocks' => $remaining]);
     }

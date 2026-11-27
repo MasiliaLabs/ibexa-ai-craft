@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Masilia\IbexaAiCraft\Capability;
 
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Os\AbstractCapability;
 use Masilia\Contracts\IbexaAi\Os\CapabilityResult;
 use Masilia\Contracts\IbexaAi\Os\Risk;
@@ -14,7 +15,7 @@ final class PageDescribeCapability extends AbstractCapability
 {
     public function __construct(
         private readonly PageBlocks $blocks,
-        private readonly Conventions $conventions,
+        private readonly ConventionsSource $conventionsSource,
         private readonly ?ShownBlocks $shown = null,
     ) {
     }
@@ -34,7 +35,7 @@ final class PageDescribeCapability extends AbstractCapability
         return sprintf(
             'Reads the "%s" field of a page: its blocks, from the first to the last, with their content_id, content type, name and the number of items they hold. '
             . 'With a siteaccess, each block also says whether the design of that site can show it (shown). Use it before moving, removing or adding blocks.',
-            $this->conventions->blocksField,
+            $this->conventionsSource->conventions()->blocksField,
         );
     }
 

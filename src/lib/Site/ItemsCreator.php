@@ -8,6 +8,7 @@ use Ibexa\Contracts\Core\Repository\Repository;
 use Ibexa\Contracts\Core\Repository\Values\ContentType\ContentType;
 use Ibexa\Contracts\Core\Repository\Values\ContentType\FieldDefinition;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Content\ContentWriter;
 use Masilia\Contracts\IbexaAi\Content\Languages;
 use Throwable;
@@ -31,7 +32,7 @@ final readonly class ItemsCreator
         private Repository $repository,
         private ContentWriter $writer,
         private Languages $languages,
-        private Conventions $conventions,
+        private ConventionsSource $conventionsSource,
     ) {
     }
 
@@ -130,7 +131,7 @@ final readonly class ItemsCreator
                 if ($depth >= self::MAX_DEPTH) {
                     return sprintf('Items can be nested %d levels deep at most.', self::MAX_DEPTH);
                 }
-                $problem = $this->itemsProblem($itemType, $this->conventions->itemsFieldFor($type), (array) $item['items'], $depth + 1);
+                $problem = $this->itemsProblem($itemType, $this->conventionsSource->conventions()->itemsFieldFor($type), (array) $item['items'], $depth + 1);
                 if ($problem !== null) {
                     return sprintf('Item %d ("%s"): %s', $index + 1, $type, $problem);
                 }
@@ -153,7 +154,7 @@ final readonly class ItemsCreator
         $lang = $language ?? $info->mainLanguageCode;
 
         $folder = $this->holdsPageBlocks($info->getContentType()->identifier, $linkField)
-            ? (new BlocksFolders($this->repository, $this->conventions))->ensure($contentId, $lang)
+            ? (new BlocksFolders($this->repository, $this->conventionsSource))->ensure($contentId, $lang)
             : $this->folderUnder($info->getMainLocation()->id, trim(($info->name ?? 'items') . ' items') ?: 'items', $lang);
 
         $ids = [];
@@ -162,7 +163,7 @@ final readonly class ItemsCreator
             $itemId = (int) $this->writer->create($type, [$folder], (array) ($item['fields'] ?? []), $lang)->content->getId();
             $ids[] = $itemId;
             if (isset($item['items'])) {
-                $children[$itemId] = $this->createUnder($itemId, $this->conventions->itemsFieldFor($type), (array) $item['items'], $lang, $children);
+                $children[$itemId] = $this->createUnder($itemId, $this->conventionsSource->conventions()->itemsFieldFor($type), (array) $item['items'], $lang, $children);
             }
         }
 
@@ -174,7 +175,7 @@ final readonly class ItemsCreator
     /** The blocks of a page or of the home page go in the folder of its blocks; the items of a block keep their own folder. */
     private function holdsPageBlocks(string $contentType, string $linkField): bool
     {
-        return $linkField === $this->conventions->blocksField && in_array($contentType, [$this->conventions->pageType, $this->conventions->homePageType], true);
+        return $linkField === $this->conventionsSource->conventions()->blocksField && in_array($contentType, [$this->conventionsSource->conventions()->pageType, $this->conventionsSource->conventions()->homePageType], true);
     }
 
     /**
@@ -184,13 +185,13 @@ final readonly class ItemsCreator
     {
         $locations = $this->repository->getLocationService();
         foreach ($locations->loadLocationChildren($locations->loadLocation($parentLocationId), 0, 100) as $child) {
-            if ($child->contentInfo->getContentType()->identifier === $this->conventions->folderType && strcasecmp((string) $child->getContent()->getName(), $name) === 0) {
+            if ($child->contentInfo->getContentType()->identifier === $this->conventionsSource->conventions()->folderType && strcasecmp((string) $child->getContent()->getName(), $name) === 0) {
                 return $child->id;
             }
         }
 
         $contents = $this->repository->getContentService();
-        $struct = $contents->newContentCreateStruct($this->repository->getContentTypeService()->loadContentTypeByIdentifier($this->conventions->folderType), $language);
+        $struct = $contents->newContentCreateStruct($this->repository->getContentTypeService()->loadContentTypeByIdentifier($this->conventionsSource->conventions()->folderType), $language);
         $struct->setField(self::FOLDER_NAME, $name, $language);
         $draft = $contents->createContent($struct, [$locations->newLocationCreateStruct($parentLocationId)]);
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Masilia\IbexaAiCraft\Skill;
 
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Os\Skill;
 
 /**
@@ -13,7 +14,7 @@ use Masilia\Contracts\IbexaAi\Os\Skill;
  */
 final readonly class CraftSkill implements Skill
 {
-    public function __construct(private Conventions $conventions)
+    public function __construct(private ConventionsSource $conventionsSource)
     {
     }
 
@@ -24,12 +25,12 @@ final readonly class CraftSkill implements Skill
 
     public function instructions(): string
     {
-        $page = $this->conventions->pageType;
-        $blocks = $this->conventions->blocksField;
-        $items = $this->conventions->itemsField;
+        $page = $this->conventionsSource->conventions()->pageType;
+        $blocks = $this->conventionsSource->conventions()->blocksField;
+        $items = $this->conventionsSource->conventions()->itemsField;
 
         return <<<PROMPT
-Sites are made of pages. A page (content type `{$page}`) is made of blocks listed in its `{$blocks}` field (a hero banner, a text block, info cards…); a block can hold child items in its `{$items}` field (the cards of an "info cards" block). The block types are the content types of the group "{$this->conventions->blockGroup}".
+Sites are made of pages. A page (content type `{$page}`) is made of blocks listed in its `{$blocks}` field (a hero banner, a text block, info cards…); a block can hold child items in its `{$items}` field (the cards of an "info cards" block). The block types are the content types of the group "{$this->conventionsSource->conventions()->blockGroup}".
 
 ## Capabilities
 - `site.explore(siteaccess?)`: required before you build or change pages. Without a siteaccess it only lists the front-office siteaccesses: ask the user which one, never pick one. With one it returns the site's root location, its tree, candidate parent locations, the block types with their fields (`blockTypes[].fields[].columns[].identifier` for matrix fields) and `parentBlocksAllowedTypes`: the ONLY block types a page accepts. Call it once per request.

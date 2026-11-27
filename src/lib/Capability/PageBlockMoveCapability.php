@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Masilia\IbexaAiCraft\Capability;
 
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Content\ContentWriter;
 use Masilia\Contracts\IbexaAi\Content\Languages;
 use Masilia\Contracts\IbexaAi\Os\AbstractCapability;
@@ -18,7 +19,7 @@ final class PageBlockMoveCapability extends AbstractCapability
         private readonly PageBlocks $blocks,
         private readonly ContentWriter $writer,
         private readonly Languages $languages,
-        private readonly Conventions $conventions,
+        private readonly ConventionsSource $conventionsSource,
     ) {
     }
 
@@ -34,7 +35,7 @@ final class PageBlockMoveCapability extends AbstractCapability
 
     public function description(): string
     {
-        return sprintf('Changes the order of the "%s" field of the page: the block goes to the given position (0 is the first block). The other blocks keep their order. A new version of the page is published.', $this->conventions->blocksField);
+        return sprintf('Changes the order of the "%s" field of the page: the block goes to the given position (0 is the first block). The other blocks keep their order. A new version of the page is published.', $this->conventionsSource->conventions()->blocksField);
     }
 
     public function inputSchema(): array
@@ -84,7 +85,7 @@ final class PageBlockMoveCapability extends AbstractCapability
     public function execute(array $arguments): CapabilityResult
     {
         $order = $this->reordered($arguments);
-        $this->writer->update((int) $arguments['content_id'], [$this->conventions->blocksField => $order], $this->languages->default());
+        $this->writer->update((int) $arguments['content_id'], [$this->conventionsSource->conventions()->blocksField => $order], $this->languages->default());
 
         return CapabilityResult::ok(sprintf('Block %d is now at position %d', (int) $arguments['block_content_id'], array_search((int) $arguments['block_content_id'], $order, true)), ['blocks' => $order]);
     }

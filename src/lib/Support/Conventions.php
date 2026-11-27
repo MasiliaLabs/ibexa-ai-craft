@@ -8,7 +8,7 @@ namespace Masilia\IbexaAiCraft\Support;
  * How the sites of a project are built, as the settings of the bundle: the part of the way of working that changes from
  * one project to the next. The defaults are the way the Masilia sites are built; another project sets its own.
  */
-final readonly class Conventions
+final readonly class Conventions implements ConventionsSource
 {
     /**
      * @param string       $blockGroup    The group of content types that are blocks (the parts a page is made of)
@@ -36,6 +36,12 @@ final readonly class Conventions
         public array $itemsFieldByType = [],
         public string $blocksFolderSuffix = 'Blocks',
     ) {
+    }
+
+    /** The conventions are their own source: what is fixed (a project that sets them in the bundle configuration, a test). */
+    public function conventions(): self
+    {
+        return $this;
     }
 
     /** The field that holds the child items of a block of this type */

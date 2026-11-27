@@ -8,6 +8,7 @@ use Ibexa\Contracts\Core\Repository\Repository;
 use Ibexa\Contracts\Core\Repository\Values\Content\Location;
 use Ibexa\Contracts\Core\SiteAccess\ConfigResolverInterface;
 use Masilia\IbexaAiCraft\Support\Conventions;
+use Masilia\IbexaAiCraft\Support\ConventionsSource;
 use Masilia\Contracts\IbexaAi\Content\ContentWriter;
 use Masilia\Contracts\IbexaAi\Content\Languages;
 use Masilia\Contracts\IbexaAi\Image\ImageGenerator;
@@ -47,7 +48,7 @@ final readonly class SiteBuilder
         private ConfigResolverInterface $config,
         private ImageGenerator $images,
         private LoggerInterface $aiLogger,
-        private Conventions $conventions = new Conventions(),
+        private ConventionsSource $conventionsSource = new Conventions(),
         private ?BlocksFolders $blocksFolders = null,
     ) {
     }
@@ -71,13 +72,13 @@ final readonly class SiteBuilder
             return sprintf('A site is created with %d pages at most; add the others with content.create afterwards.', self::MAX_PAGES);
         }
 
-        $blocks = $this->conventions->blocksField;
+        $blocks = $this->conventionsSource->conventions()->blocksField;
         foreach ([
-            [$this->conventions->siteType, ($arguments['generate_images'] ?? true) ? [...self::SITE_FIELDS, self::FAVICON_FIELD] : self::SITE_FIELDS],
-            [$this->conventions->layoutType, $this->layoutFields()],
-            [$this->conventions->homePageType, [...self::HOME_FIELDS, $blocks]],
-            [$this->conventions->pageType, [...self::PAGE_FIELDS, $blocks]],
-            [$this->conventions->folderType, self::FOLDER_FIELDS],
+            [$this->conventionsSource->conventions()->siteType, ($arguments['generate_images'] ?? true) ? [...self::SITE_FIELDS, self::FAVICON_FIELD] : self::SITE_FIELDS],
+            [$this->conventionsSource->conventions()->layoutType, $this->layoutFields()],
+            [$this->conventionsSource->conventions()->homePageType, [...self::HOME_FIELDS, $blocks]],
+            [$this->conventionsSource->conventions()->pageType, [...self::PAGE_FIELDS, $blocks]],
+            [$this->conventionsSource->conventions()->folderType, self::FOLDER_FIELDS],
         ] as [$type, $fields]) {
             $problem = $this->typeProblem($type, $fields);
             if ($problem !== null) {
@@ -103,11 +104,11 @@ final readonly class SiteBuilder
     {
         $language = isset($arguments['language']) ? ($this->languages->resolve((string) $arguments['language']) ?? $this->languages->default()) : $this->languages->default();
         $name = trim((string) $arguments['site_name']);
-        $blocks = $this->conventions->blocksField;
+        $blocks = $this->conventionsSource->conventions()->blocksField;
 
         $this->repository->beginTransaction();
         try {
-            [$site, $siteLocation] = $this->create($this->conventions->siteType, (int) $this->siteParent($arguments), [
+            [$site, $siteLocation] = $this->create($this->conventionsSource->conventions()->siteType, (int) $this->siteParent($arguments), [
                 'title' => $name,
                 'domain' => trim((string) $arguments['domain']),
                 'description' => (string) ($arguments['description'] ?? ''),
@@ -116,13 +117,13 @@ final readonly class SiteBuilder
             if (in_array(self::LAYOUT_LOGO_FIELD, $this->layoutFields(), true)) {
                 $layoutFields[self::LAYOUT_LOGO_FIELD] = '<p>' . htmlspecialchars($name, ENT_QUOTES | ENT_XML1) . '</p>';
             }
-            [$layout] = $this->create($this->conventions->layoutType, $siteLocation, $layoutFields, $language);
-            [$home, $homeLocation] = $this->create($this->conventions->homePageType, $siteLocation, ['title' => 'Home', $blocks => []], $language);
+            [$layout] = $this->create($this->conventionsSource->conventions()->layoutType, $siteLocation, $layoutFields, $language);
+            [$home, $homeLocation] = $this->create($this->conventionsSource->conventions()->homePageType, $siteLocation, ['title' => 'Home', $blocks => []], $language);
             $this->blocksFolders?->ensureIfPossible($home, $language);
 
-            [$media, $mediaLocation] = $this->create($this->conventions->folderType, (int) $this->mediaRoot($arguments), ['name' => sprintf('%s Media', $name)], $language);
+            [$media, $mediaLocation] = $this->create($this->conventionsSource->conventions()->folderType, (int) $this->mediaRoot($arguments), ['name' => sprintf('%s Media', $name)], $language);
             foreach (self::MEDIA_FOLDERS as $folder) {
-                $this->create($this->conventions->folderType, $mediaLocation, ['name' => $folder], $language);
+                $this->create($this->conventionsSource->conventions()->folderType, $mediaLocation, ['name' => $folder], $language);
             }
 
             $pages = $this->pages((array) ($arguments['pages'] ?? []), $homeLocation, $language);
@@ -155,10 +156,10 @@ final readonly class SiteBuilder
         $created = [];
         foreach ($pages as $page) {
             $title = trim((string) $page['title']);
-            [$id, $location] = $this->create($this->conventions->pageType, $parentLocationId, [
+            [$id, $location] = $this->create($this->conventionsSource->conventions()->pageType, $parentLocationId, [
                 'title' => $title,
                 'description' => (string) ($page['description'] ?? ''),
-                $this->conventions->blocksField => [],
+                $this->conventionsSource->conventions()->blocksField => [],
             ], $language);
             $this->blocksFolders?->ensureIfPossible($id, $language);
             $entry = ['content_id' => $id, 'location_id' => $location, 'title' => $title];
@@ -214,7 +215,7 @@ final readonly class SiteBuilder
     private function layoutFields(): array
     {
         try {
-            $has = $this->repository->getContentTypeService()->loadContentTypeByIdentifier($this->conventions->layoutType)->getFieldDefinition(self::LAYOUT_LOGO_FIELD) !== null;
+            $has = $this->repository->getContentTypeService()->loadContentTypeByIdentifier($this->conventionsSource->conventions()->layoutType)->getFieldDefinition(self::LAYOUT_LOGO_FIELD) !== null;
         } catch (Throwable) {
             $has = false;
         }
